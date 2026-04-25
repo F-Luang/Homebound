@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Application extends Model
+{
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function pet(): BelongsTo
+    {
+        return $this->belongsTo(Pet::class);
+    }
+    public function meetGreet(): HasOne
+    {
+        return $this->hasOne(MeetGreet::class);
+    }
+}
