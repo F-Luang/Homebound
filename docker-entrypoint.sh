@@ -17,6 +17,9 @@ chmod -R 775 /var/www/html/bootstrap/cache
 echo "Running migrations..."
 php artisan migrate --force
 
+echo "Seeding if needed..."
+php artisan tinker --execute="if(\App\Models\User::count() === 0) { \Artisan::call('db:seed', ['--force' => true]); echo 'Seeded!'; } else { echo 'Already seeded, skipping.'; }"
+
 echo "Linking storage..."
 php artisan storage:link || true
 
