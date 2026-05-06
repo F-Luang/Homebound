@@ -41,6 +41,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => in_array($request->role, ['adopter', 'volunteer']) ? $request->role : 'adopter',
+            'is_approved' => $request->role === 'volunteer' ? false : true,
         ]);
 
         event(new Registered($user));

@@ -17,7 +17,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',       // ADD THIS — needed for mass assignment from seeders/factories
+        'role',
+        'is_approved',  // ADD THIS — needed for mass assignment from seeders/factories
     ];
 
     protected $hidden = [
@@ -30,7 +31,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_approved' => 'boolean',  // ADD THIS
         ];
+    }
+    public function isPendingApproval(): bool
+    {
+        return $this->role === 'volunteer' && !$this->is_approved;
     }
 
     public function applications(): HasMany

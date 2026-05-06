@@ -29,11 +29,11 @@ class DatabaseSeeder extends Seeder
         // Volunteer accounts
         $volunteer1 = User::create([
             'name' => 'Carlos Mendoza',
-            'email' => 'carlos@homebound.test',
+            'email' => 'carlos@homebound.com',
             'password' => Hash::make('password'),
             'role' => 'volunteer',
+            'is_approved' => true,  // ← add this
         ]);
-
         $volunteer2 = User::create([
             'name' => 'Ana Reyes',
             'email' => 'ana@homebound.test',

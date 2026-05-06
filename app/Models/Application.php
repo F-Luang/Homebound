@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Application extends Model
 {
+    const CREATED_AT = 'submitted_at';
+    const UPDATED_AT = 'updated_at';
+
     protected $fillable = [
         'user_id',
         'pet_id',

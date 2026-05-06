@@ -46,20 +46,59 @@
 
         {{-- Grid --}}
         @if($pets->isEmpty())
-            <div class="card" style="text-align:center;padding:48px;">
-                <div style="font-size:32px;margin-bottom:12px;">🐾</div>
-                <div style="font-size:15px;color:#888;">No pets match your search. Try adjusting your filters.</div>
+            <div class="card" style="text-align:center;padding:64px 24px;">
+                <div
+                    style="width:72px;height:72px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;">
+                    🐾
+                </div>
+                <div style="font-family:'Lora',serif;font-size:20px;font-weight:600;margin-bottom:8px;">
+                    No pets found
+                </div>
+                <div class="text-muted" style="margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto;">
+                    @if(request()->hasAny(['search', 'species', 'size', 'activity_level']))
+                        No pets match your search filters. Try adjusting or clearing them.
+                    @else
+                        No pets have been added to the shelter yet.
+                    @endif
+                </div>
+                @if(request()->hasAny(['search', 'species', 'size', 'activity_level']))
+                    <a href="{{ route('pets.index') }}" class="btn btn-primary">Clear filters</a>
+                @elseif(auth()->user()?->isAdmin())
+                    <a href="{{ route('pets.create') }}" class="btn btn-primary">+ Add first pet</a>
+                @endif
             </div>
+
         @else
             <div class="pet-grid">
                 @foreach($pets as $pet)
-                    @php $primary = $pet->images->firstWhere('is_primary', true) ?? $pet->images->first(); @endphp
+                    @php
+                        $primary = $pet->images->firstWhere('is_primary', true) ?? $pet->images->first();
+                        $bgColor = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0';
+                        $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾';
+                    @endphp
+
                     <a href="{{ route('pets.show', $pet) }}" style="display:block;">
-                        <div class="card" style="padding:0;overflow:hidden;transition:border-color 0.15s;"
+                        <div class="card" style="padding:0;overflow:hidden;transition:border-color 0.15s;position:relative;"
                             onmouseover="this.style.borderColor='rgba(0,0,0,0.25)'"
                             onmouseout="this.style.borderColor='rgba(0,0,0,0.1)'">
 
-                            {{-- Photo or emoji fallback --}}
+                            {{-- Status overlay --}}
+                            @if($pet->status !== 'available')
+                                <div
+                                    style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+                                                                                                                                                                                            background:{{ $pet->status === 'adopted' ? 'rgba(60,52,137,0.75)' : 'rgba(186,117,23,0.75)' }};
+                                                                                                                                                                                            backdrop-filter:blur(2px);">
+                                    <div style="font-size:28px;">{{ $pet->status === 'adopted' ? '🏡' : '⏳' }}</div>
+                                    <div style="font-size:13px;font-weight:600;color:white;text-align:center;">
+                                        {{ $pet->status === 'adopted' ? 'Adopted' : 'Pending adoption' }}
+                                    </div>
+                                    <div style="font-size:11px;color:rgba(255,255,255,0.8);text-align:center;padding:0 12px;">
+                                        {{ $pet->status === 'adopted' ? $pet->name . ' has found a home!' : 'An application is being processed.' }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Pet image --}}
                             @if($primary)
                                 <div style="height:130px;overflow:hidden;">
                                     <img src="{{ asset('storage/' . $primary->path) }}" alt="{{ $pet->name }}"
@@ -67,11 +106,12 @@
                                 </div>
                             @else
                                 <div
-                                    style="height:130px;background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0' }};display:flex;align-items:center;justify-content:center;font-size:52px;">
-                                    {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾' }}
+                                    style="height:130px;background:{{ $bgColor }};display:flex;align-items:center;justify-content:center;font-size:52px;">
+                                    {{ $emoji }}
                                 </div>
                             @endif
 
+                            {{-- Pet info --}}
                             <div style="padding:14px 16px;">
                                 <div style="font-family:'Lora',serif;font-size:16px;font-weight:600;margin-bottom:2px;">
                                     {{ $pet->name }}
@@ -80,11 +120,14 @@
                                     {{ $pet->breed ?? ucfirst($pet->species) }} · {{ floor($pet->age_months / 12) }}y ·
                                     {{ ucfirst($pet->size) }}
                                 </div>
-                                <div class="flex gap-8" style="flex-wrap:wrap;">
+                                <div class="flex" style="flex-wrap:wrap;gap:4px;">
                                     <span class="tag tag-teal">{{ ucfirst($pet->activity_level) }}</span>
                                     @if($pet->good_with_kids) <span class="tag tag-blue">Kid-friendly</span> @endif
                                     @if($pet->hypoallergenic) <span class="tag tag-amber">Hypoallergenic</span> @endif
                                     @if($pet->is_senior) <span class="tag tag-coral">Senior</span> @endif
+                                    @if($pet->special_note)
+                                        <span class="tag" style="background:#EEEDFE;color:#3C3489;">{{ $pet->special_note }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>

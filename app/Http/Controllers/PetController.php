@@ -6,16 +6,23 @@ use App\Models\Pet;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class PetController extends Controller
 {
     // Public listing — all roles + guests can browse
     public function index(Request $request): View
     {
-        $pets = Pet::with('images')  // changed from 'primaryImage'
-            ->where('status', 'available')
+        $pets = Pet::with('images')
+            ->whereIn('status', ['available', 'pending']) // ← exclude adopted
             ->when($request->species, fn($q) => $q->where('species', $request->species))
-            ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%"))
+            ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('breed', 'like', "%{$request->search}%");
+            }))
+            ->when($request->size, fn($q) => $q->where('size', $request->size))
+            ->when($request->activity_level, fn($q) => $q->where('activity_level', $request->activity_level))
+            ->orderByRaw("FIELD(status, 'available', 'pending')")
             ->latest()
             ->paginate(12);
 
@@ -24,7 +31,11 @@ class PetController extends Controller
 
     public function show(Pet $pet): View
     {
-        $pet->load(['images', 'medicalRecords' => fn($q) => $q->latest('record_date')]);
+        $pet->load([
+            'images',                                                    // ← all images for gallery
+            'primaryImage',                                              // ← main display photo
+            'medicalRecords' => fn($q) => $q->latest('record_date'),
+        ]);
         return view('pets.show', compact('pet'));
     }
 
@@ -48,28 +59,36 @@ class PetController extends Controller
             'hypoallergenic' => 'boolean',
             'is_senior' => 'boolean',
             'images.*' => 'nullable|image|max:2048',
+            'weight_kg' => 'nullable|numeric|min:0',
+            'food' => 'nullable|string|max:255',
+            'feeding_time' => 'nullable|string|max:255',
+            'water' => 'nullable|string|max:255',
+            'medication' => 'nullable|string|max:255',
+            'vet' => 'nullable|string|max:255',
+            'special_note' => 'nullable|string|max:255',
         ]);
 
         $pet = Pet::create($validated);
 
-        // Handle image uploads
+        // Handle new image uploads — replace existing images
         if ($request->hasFile('images')) {
+
+            // Store new images
             foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('pets', 'public');
-
                 $pet->images()->create([
                     'path' => $path,
-                    'is_primary' => $index === 0, // first image = primary
+                    'is_primary' => $index === 0,
                 ]);
             }
         }
-
         return redirect()->route('pets.show', $pet)->with('success', 'Pet added successfully.');
     }
 
     public function edit(Pet $pet): View
     {
-        return view('pets.create', compact('pet'));
+        $pet->load('images'); // ← add this
+        return view('pets.edit', compact('pet'));
     }
 
     public function update(Request $request, Pet $pet): RedirectResponse
@@ -85,20 +104,31 @@ class PetController extends Controller
             'good_with_kids' => 'boolean',
             'hypoallergenic' => 'boolean',
             'is_senior' => 'boolean',
-            'images.*' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
+            'weight_kg' => 'nullable|numeric|min:0.01',
+            'food' => 'nullable|string|max:255',
+            'feeding_time' => 'nullable|string|max:255',
+            'water' => 'nullable|string|max:255',
+            'medication' => 'nullable|string|max:255',
+            'vet' => 'nullable|string|max:255',
+            'special_note' => 'nullable|string|max:255',
+            'status' => 'nullable|in:available,pending,adopted',
         ]);
 
         $pet->update($validated);
 
-        // Handle new image uploads
+        // ADD new photos — never delete existing ones here
+        // Deletion is handled individually by PetImageController@destroy
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('pets', 'public');
+            $hasPrimary = $pet->images()->where('is_primary', true)->exists();
 
+            foreach ($request->file('images') as $i => $file) {
+                $path = $file->store('pets', 'public');
                 $pet->images()->create([
                     'path' => $path,
-                    'is_primary' => $pet->images()->count() === 0 && $index === 0,
+                    'is_primary' => !$hasPrimary && $i === 0,
                 ]);
+                $hasPrimary = true;
             }
         }
 

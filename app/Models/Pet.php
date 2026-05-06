@@ -20,6 +20,14 @@ class Pet extends Model
         'is_senior',
         'status',
         'bio',
+        'weight_kg',
+        'food',
+        'feeding_time',
+        'water',
+        'medications',
+        'vet',
+        'special_note',
+
     ];
 
     protected $casts = [

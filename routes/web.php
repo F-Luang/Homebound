@@ -8,6 +8,11 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\MeetGreetController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PetImageController;
+use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\ContractController;
 
 // -------------------------------------------------------
 // Admin only — MUST come before public pet routes
@@ -25,12 +30,33 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::post('/medical', [MedicalRecordController::class, 'store'])->name('medical.store');
     Route::delete('/medical/{medicalRecord}', [MedicalRecordController::class, 'destroy'])->name('medical.destroy');
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+
+    Route::post('pets/{pet}/images', [PetImageController::class, 'store'])->name('pet-images.store');
+    Route::patch('pets/{pet}/images/{image}/primary', [PetImageController::class, 'setPrimary'])->name('pet-images.setPrimary');
+    Route::delete('pets/{pet}/images/{image}', [PetImageController::class, 'destroy'])->name('pet-images.destroy');
 });
 
 // -------------------------------------------------------
 // Public routes — after admin routes
 // -------------------------------------------------------
-Route::get('/', fn() => redirect()->route('pets.index'));
+Route::get('/', function () {
+    $featuredPets = collect(['dog', 'cat', 'rabbit'])->map(function ($species) {
+        return \App\Models\Pet::with('images')
+            ->where('status', 'available')
+            ->where('species', $species)
+            ->latest()
+            ->first();
+    })->filter(); // removes nulls if no pet of that species exists
+
+    return view('welcome', compact('featuredPets'));
+})->name('home');
+
+Route::get('/pending-approval', function () {
+    return view('auth.pending');
+})->middleware('auth')->name('volunteer.pending');
 
 Route::resource('pets', PetController::class)->only(['index', 'show']);
 
@@ -47,10 +73,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
     Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show');
+    Route::delete('/applications/{application}/cancel', [ApplicationController::class, 'cancel'])->name('applications.cancel');
+    Route::get('/applications/{application}/contract', [ContractController::class, 'download'])
+        ->name('applications.contract');
 
     Route::get('/match', [MatchController::class, 'index'])->name('match.index');
     Route::post('/match', [MatchController::class, 'run'])->name('match.run');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+
 });
+// Volunteer management
+Route::get('/volunteers', [VolunteerController::class, 'index'])->name('volunteers.index');
+Route::patch('/volunteers/{user}/approve', [VolunteerController::class, 'approve'])->name('volunteers.approve');
+Route::patch('/volunteers/{user}/revoke', [VolunteerController::class, 'revoke'])->name('volunteers.revoke');
 
 // -------------------------------------------------------
 // Admin + Volunteer
@@ -59,9 +97,9 @@ Route::middleware(['auth', 'role:admin,volunteer'])->group(function () {
 
     Route::get('/medical/{pet}', [MedicalRecordController::class, 'index'])->name('medical.index');
 
-    Route::get('/meet-greets', [MeetGreetController::class, 'index'])->name('meet-greets.index');
-    Route::post('/meet-greets', [MeetGreetController::class, 'store'])->name('meet-greets.store');
-    Route::patch('/meet-greets/{meetGreet}/status', [MeetGreetController::class, 'updateStatus'])->name('meet-greets.updateStatus');
+    Route::get('/home-visits', [MeetGreetController::class, 'index'])->name('home-visits.index');
+    Route::post('/home-visits', [MeetGreetController::class, 'store'])->name('home-visits.store');
+    Route::patch('/home-visits/{meetGreet}/status', [MeetGreetController::class, 'updateStatus'])->name('home-visits.updateStatus');
 });
 
 require __DIR__ . '/auth.php';

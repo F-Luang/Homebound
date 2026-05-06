@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('password');
             // REMOVE THE SECOND EMAIL LINE THAT WAS HERE
             $table->enum('role', ['admin', 'adopter', 'volunteer'])->default('adopter');
+            $table->boolean('is_approved')->default(true); // ← ADD THIS
             $table->rememberToken();
             $table->timestamps();
         });

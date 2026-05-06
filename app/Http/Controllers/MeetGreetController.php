@@ -35,6 +35,7 @@ class MeetGreetController extends Controller
             'application_id' => 'required|exists:applications,id',
             'scheduled_at' => 'required|date|after:now',
             'notes' => 'nullable|string|max:500',
+            'location' => 'nullable|string|max:255',
         ]);
 
         // Only one meet-greet per application

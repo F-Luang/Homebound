@@ -15,6 +15,7 @@ class MeetGreet extends Model
         'scheduled_at',
         'status',
         'notes',
+        'location',
     ];
 
     protected $casts = [

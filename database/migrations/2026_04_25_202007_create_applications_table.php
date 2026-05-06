@@ -12,8 +12,8 @@ return new class extends Migration {
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('pet_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('pet_id');
             $table->enum('status', [
                 'pending',
                 'under_review',
@@ -26,6 +26,9 @@ return new class extends Migration {
             $table->text('notes')->nullable();
             $table->timestamp('submitted_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+
+            $table->index('user_id');
+            $table->index('pet_id');
         });
     }
 

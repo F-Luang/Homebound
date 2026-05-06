@@ -13,8 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'volunteer.approved' => \App\Http\Middleware\EnsureVolunteerIsApproved::class,
         ]);
+
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureVolunteerIsApproved::class);
     })
+
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
