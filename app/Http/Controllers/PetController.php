@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class PetController extends Controller
 {
@@ -70,14 +71,19 @@ class PetController extends Controller
 
         $pet = Pet::create($validated);
 
-        // Handle new image uploads — replace existing images
+        // Handle new image uploads
         if ($request->hasFile('images')) {
-
-            // Store new images
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('pets', 'public');
+                $result = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                    $image->getRealPath(),
+                    [
+                        'folder' => 'homebound/pets',
+                        'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $index,
+                    ]
+                );
+
                 $pet->images()->create([
-                    'path' => $path,
+                    'path' => $result->getSecurePath(),
                     'is_primary' => $index === 0,
                 ]);
             }
@@ -123,11 +129,19 @@ class PetController extends Controller
             $hasPrimary = $pet->images()->where('is_primary', true)->exists();
 
             foreach ($request->file('images') as $i => $file) {
-                $path = $file->store('pets', 'public');
+                $result = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                    $file->getRealPath(),
+                    [
+                        'folder' => 'homebound/pets',
+                        'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $i,
+                    ]
+                );
+
                 $pet->images()->create([
-                    'path' => $path,
+                    'path' => $result->getSecurePath(),
                     'is_primary' => !$hasPrimary && $i === 0,
                 ]);
+
                 $hasPrimary = true;
             }
         }

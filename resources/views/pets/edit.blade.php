@@ -231,7 +231,7 @@
                             @foreach($pet->images as $img)
                                 <div
                                     style="border-radius:8px;overflow:hidden;border:2px solid {{ $img->is_primary ? '#1D9E75' : 'rgba(0,0,0,0.08)' }};">
-                                    <img src="{{ asset('storage/' . $img->path) }}" alt="{{ $pet->name }}"
+                                    <img src="{{ str_starts_with($img->path, 'http') ? $img->path : asset('storage/' . $img->path) }}" alt="{{ $pet->name }}"
                                         style="width:100%;height:90px;object-fit:cover;display:block;">
                                     <div style="padding:5px;display:flex;flex-direction:column;gap:4px;background:#fafaf8;">
                                         @if(!$img->is_primary)

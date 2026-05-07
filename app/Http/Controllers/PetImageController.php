@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Pet;
 use App\Models\PetImage;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class PetImageController extends Controller
 {
-    // Upload additional photos to an existing pet
     public function store(Request $request, Pet $pet): RedirectResponse
     {
         $request->validate([
@@ -21,44 +20,48 @@ class PetImageController extends Controller
         $hasPrimary = $pet->images()->where('is_primary', true)->exists();
 
         foreach ($request->file('images') as $i => $file) {
-            $path = $file->store('pets', 'public');
+            // Upload to Cloudinary
+            $result = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'homebound/pets',
+                'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $i,
+            ]);
+
             $pet->images()->create([
-                'path' => $path,
+                'path' => $result->getSecurePath(), // full https URL
                 'is_primary' => !$hasPrimary && $i === 0,
             ]);
+
             $hasPrimary = true;
         }
 
         return back()->with('success', 'Photos uploaded successfully.');
     }
 
-    // Set a photo as the primary display image
-    public function setPrimary(Pet $pet, PetImage $image): RedirectResponse
+    public function setPrimary(PetImage $image): RedirectResponse
     {
-        // Remove current primary
-        $pet->images()->update(['is_primary' => false]);
-
-        // Set new primary
+        $image->pet->images()->update(['is_primary' => false]);
         $image->update(['is_primary' => true]);
 
         return back()->with('success', 'Primary photo updated.');
     }
 
-    // Delete a single photo
-    public function destroy(Pet $pet, PetImage $image): RedirectResponse
+    public function destroy(PetImage $image): RedirectResponse
     {
-        // Delete file from storage
-        Storage::disk('public')->delete($image->path);
-
-        // If deleting primary, promote next image
-        $wasPrimary = $image->is_primary;
-        $image->delete();
-
-        if ($wasPrimary) {
-            $next = $pet->images()->first();
-            $next?->update(['is_primary' => true]);
+        // Delete from Cloudinary if it's a Cloudinary URL
+        if (str_contains($image->path, 'cloudinary.com')) {
+            try {
+                // Extract public_id from URL
+                preg_match('/homebound\/pets\/[^.]+/', $image->path, $matches);
+                if ($matches) {
+                    Cloudinary::destroy($matches[0]);
+                }
+            } catch (\Exception $e) {
+                // Continue even if Cloudinary delete fails
+            }
         }
 
-        return back()->with('success', 'Photo deleted.');
+        $image->delete();
+
+        return back()->with('success', 'Photo removed.');
     }
 }
