@@ -63,8 +63,8 @@
                     <div class="flex items-center justify-between"
                         style="padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.06);">
                         <div>
-                            <div style="font-size:13px;font-weight:500;">{{ $app->user->name }}</div>
-                            <div style="font-size:11px;color:#888;">→ {{ $app->pet->name }}</div>
+                            <div style="font-size:13px;font-weight:500;">{{ $app->user->name ?? 'Unknown' }}</div>
+                            <div style="font-size:11px;color:#888;">→ {{ $app->pet->name ?? 'Deleted pet' }}</div>
                         </div>
                         <span
                             class="badge badge-{{ str_replace('_', '-', $app->status) }}">{{ ucfirst(str_replace('_', ' ', $app->status)) }}</span>

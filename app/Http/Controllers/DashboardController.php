@@ -17,7 +17,12 @@ class DashboardController extends Controller
             'pendingCount' => Application::where('status', 'pending')->count(),
             'adoptedThisMonth' => Pet::where('status', 'adopted')->whereMonth('updated_at', now()->month)->count(),
             'scheduledMeetGreets' => MeetGreet::where('status', 'scheduled')->count(),
-            'recentApplications' => Application::with(['user', 'pet'])->latest('submitted_at')->take(5)->get(),
+            'recentApplications' => Application::with(['user', 'pet'])
+                ->whereHas('pet')
+                ->whereHas('user')
+                ->latest('submitted_at')
+                ->take(5)
+                ->get(),
             'recentPets' => Pet::latest()->take(5)->get(),
         ]);
     }
