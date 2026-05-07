@@ -21,6 +21,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Install Node dependencies and build assets
 RUN npm install && npm run build
 
+# Verify build output
+RUN ls -la /var/www/html/public/build/
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
@@ -30,6 +33,13 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 RUN a2enmod rewrite
+
+# Enable .htaccess
+RUN echo '<Directory /var/www/html/public>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
