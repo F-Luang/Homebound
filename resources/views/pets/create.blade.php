@@ -35,7 +35,7 @@
                     <div class="form-group">
                         <label class="form-label">Species *</label>
                         <select class="form-input" name="species" required>
-                            @foreach(['dog', 'cat', 'rabbit', 'bird', 'other'] as $s)
+                            @foreach(['dog', 'cat', 'rabbit', 'bird', 'hamster', 'other'] as $s)
                                 <option value="{{ $s }}" {{ old('species', $pet->species ?? '') === $s ? 'selected' : '' }}>
                                     {{ ucfirst($s) }}
                                 </option>
