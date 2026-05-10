@@ -18,7 +18,7 @@
                     📋
                 </div>
                 <div style="font-family:'Lora',serif;font-size:20px;font-weight:600;margin-bottom:8px;color:#1a1a18;">
-                    {{ auth()->user()->isAdmin() ? 'No applications yet' : 'No applications yet' }}
+                    No applications yet
                 </div>
                 <div class="text-muted" style="margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto;">
                     {{ auth()->user()->isAdmin()
@@ -32,7 +32,7 @@
 
         @else
 
-            {{-- ===== ADOPTER VIEW — status tracker per application ===== --}}
+            {{-- ===== ADOPTER VIEW ===== --}}
             @if(!auth()->user()->isAdmin())
                 @php
                     $stages = [
@@ -51,14 +51,17 @@
                         @php
                             $current = $stages[$app->status] ?? ['step' => 1, 'label' => ucfirst($app->status)];
                             $isRejected = $app->status === 'rejected';
+                            $species = $app->pet->species ?? 'other';
+                            $bgColors = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'];
+                            $emojis = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'];
                         @endphp
                         <div class="card">
                             {{-- Pet info row --}}
                             <div class="flex items-center justify-between" style="margin-bottom:20px;">
                                 <div class="flex items-center gap-12">
                                     <div
-                                        style="width:44px;height:44px;border-radius:10px;background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$app->pet->species] ?? '#F5F4F0' }};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
-                                        {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$app->pet->species] ?? '🐾' }}
+                                        style="width:44px;height:44px;border-radius:10px;background:{{ $bgColors[$species] ?? '#F5F4F0' }};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+                                        {{ $emojis[$species] ?? '🐾' }}
                                     </div>
                                     <div>
                                         <div style="font-family:'Lora',serif;font-weight:600;font-size:16px;">
@@ -113,16 +116,14 @@
                                     View full details →
                                 </a>
                             </div>
-
                         </div>
                     @endforeach
                 </div>
 
                 <div style="margin-top:20px;">{{ $applications->links() }}</div>
 
-
             @else
-                {{-- ===== ADMIN VIEW — table with workflow ===== --}}
+                {{-- ===== ADMIN VIEW ===== --}}
 
                 {{-- Search & filter bar --}}
                 <form method="GET" action="{{ route('applications.index') }}" class="card"
@@ -151,7 +152,6 @@
                             <a href="{{ route('applications.index') }}" class="btn">Clear</a>
                         @endif
                     </div>
-                    {{-- Active filter tags --}}
                     @if(request()->hasAny(['search', 'status', 'species']))
                         <div class="flex gap-8" style="margin-top:10px;flex-wrap:wrap;">
                             @if(request('search'))
@@ -173,7 +173,6 @@
                     @endif
                 </form>
 
-                {{-- Results count --}}
                 @if(request()->hasAny(['search', 'status', 'species']))
                     <div style="font-size:13px;color:#888;margin-bottom:12px;">
                         {{ $applications->total() }} result{{ $applications->total() !== 1 ? 's' : '' }} found
@@ -181,7 +180,6 @@
                     </div>
                 @endif
 
-                <div class="card" style="margin-bottom:20px;"></div>
                 <div class="card" style="margin-bottom:20px;">
                     <div style="font-size:12px;color:#888;margin-bottom:12px;font-weight:500;">Adoption workflow stages</div>
                     <div class="steps">
@@ -218,31 +216,37 @@
                                         ][$app->status] ?? null;
                                     @endphp
                                     <tr>
+                                        {{-- Applicant --}}
+                                        <td>
+                                            <a href="{{ route('applications.show', $app) }}" style="display:block;">
+                                                <div style="font-weight:500;color:var(--green);">{{ $app->user->name ?? 'Unknown' }}
+                                                </div>
+                                                <div style="font-size:11px;color:#888;">{{ $app->user->email ?? '' }}</div>
+                                            </a>
+                                        </td>
+
+                                        {{-- Pet --}}
                                         <td>
                                             @if($app->pet)
-                                                <a href="{{ route('pets.show', $app->pet) }}" style="font-weight:500;color:var(--green);">
-                                                    {{ $app->pet->name }}
-                                                </a>
+                                                <a href="{{ route('pets.show', $app->pet) }}"
+                                                    style="color:var(--green);">{{ $app->pet->name }}</a>
                                                 <div style="font-size:11px;color:#888;">{{ ucfirst($app->pet->species) }}</div>
                                             @else
                                                 <div style="font-weight:500;color:#888;">Deleted pet</div>
                                             @endif
                                         </td>
-                                        <td>
-                                            @if($app->pet)
-                                                <a href="{{ route('pets.show', $app->pet) }}"
-                                                    style="color:var(--green);">{{ $app->pet->name }}</a>
-                                            @else
-                                                <span style="color:#888;">Deleted pet</span>
-                                            @endif
-                                            <div style="font-size:11px;color:#888;">{{ ucfirst($app->pet->species) }}</div>
-                                        </td>
+
+                                        {{-- Submitted --}}
                                         <td style="color:#888;font-size:12px;">{{ $app->submitted_at->format('M j, Y') }}</td>
+
+                                        {{-- Status --}}
                                         <td>
                                             <span class="badge badge-{{ str_replace(['_', ' '], '-', $app->status) }}">
                                                 {{ ucfirst(str_replace('_', ' ', $app->status)) }}
                                             </span>
                                         </td>
+
+                                        {{-- Actions --}}
                                         <td>
                                             <div class="flex gap-8">
                                                 @if($next)
