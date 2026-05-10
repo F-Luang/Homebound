@@ -17,6 +17,8 @@ class ApplicationController extends Controller
     {
         if (auth()->user()->isAdmin()) {
             $applications = Application::with(['user', 'pet'])
+                ->whereHas('pet')
+                ->whereHas('user')
                 ->when(
                     $request->search,
                     fn($q) =>
@@ -49,6 +51,7 @@ class ApplicationController extends Controller
                 ->paginate(20);
         } else {
             $applications = Application::with('pet')
+                ->whereHas('pet')
                 ->where('user_id', auth()->id())
                 ->latest('submitted_at')
                 ->paginate(20);
