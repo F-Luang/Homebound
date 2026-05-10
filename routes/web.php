@@ -33,7 +33,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
-
     Route::post('pets/{pet}/images', [PetImageController::class, 'store'])->name('pet-images.store');
     Route::patch('pets/{pet}/images/{image}/primary', [PetImageController::class, 'setPrimary'])->name('pet-images.setPrimary');
     Route::delete('pets/{pet}/images/{image}', [PetImageController::class, 'destroy'])->name('pet-images.destroy');
@@ -43,7 +42,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // Public routes — after admin routes
 // -------------------------------------------------------
 Route::get('/', function () {
-    $featuredPets = collect(['dog', 'cat', 'rabbit'])->map(function ($species) {
+    // Show one featured pet per species (most recently added)
+    $featuredPets = collect(['dog', 'cat', 'rabbit', 'bird'])->map(function ($species) {
         return \App\Models\Pet::with('images')
             ->where('status', 'available')
             ->where('species', $species)
@@ -82,9 +82,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/match', [MatchController::class, 'run'])->name('match.run');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-
-
 });
+
 // Volunteer management
 Route::get('/volunteers', [VolunteerController::class, 'index'])->name('volunteers.index');
 Route::patch('/volunteers/{user}/approve', [VolunteerController::class, 'approve'])->name('volunteers.approve');

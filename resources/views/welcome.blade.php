@@ -383,32 +383,6 @@
             color: var(--coral);
         }
 
-        .hero-card.featured {
-            grid-column: span 2;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: linear-gradient(135deg, #f0fdf8, #e6f9f0);
-        }
-
-        .hero-card.featured .hero-card-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            background: white;
-            flex-shrink: 0;
-            font-size: 36px;
-            overflow: hidden;
-        }
-
-        .hero-card.featured .hero-card-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-
         .featured-badge {
             display: inline-flex;
             align-items: center;
@@ -942,46 +916,12 @@
 
             <div class="hero-visual">
                 @if(isset($featuredPets) && $featuredPets->count() > 0)
-
-                    {{-- Featured card — first pet --}}
-                    @php
-                        $first = $featuredPets->first();
-                        $firstPrimary = $first->images->firstWhere('is_primary', true) ?? $first->images->first();
-                        $firstImgUrl = $firstPrimary ? (str_starts_with($firstPrimary->path, 'http') ? $firstPrimary->path : asset('storage/' . $firstPrimary->path)) : null;
-                    @endphp
-                    <a href="{{ route('pets.show', $first) }}" style="display:contents;">
-                        <div class="hero-card featured">
-                            <div class="hero-card-img"
-                                style="background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$first->species] ?? '#F5F4F0' }};">
-                                @if($firstImgUrl)
-                                    <img src="{{ $firstImgUrl }}" alt="{{ $first->name }}">
-                                @else
-                                    {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$first->species] ?? '🐾' }}
-                                @endif
-                            </div>
-                            <div>
-                                <div class="featured-badge">✓ Available</div>
-                                <div class="hero-card-name">{{ $first->name }}</div>
-                                <div class="hero-card-breed">
-                                    {{ $first->breed ?? ucfirst($first->species) }} · {{ floor($first->age_months / 12) }}
-                                    yrs · {{ ucfirst($first->size) }}
-                                </div>
-                                <div class="hero-card-tags">
-                                    @if($first->good_with_kids) <span class="tag tag-green">Kid-friendly</span> @endif
-                                    @if($first->hypoallergenic) <span class="tag tag-amber">Hypoallergenic</span> @endif
-                                    @if($first->is_senior) <span class="tag tag-coral">Senior</span> @endif
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-
-                    {{-- Second and third pets --}}
-                    @foreach($featuredPets->skip(1) as $pet)
+                    @foreach($featuredPets as $pet)
                         @php
                             $primary = $pet->images->firstWhere('is_primary', true) ?? $pet->images->first();
                             $imgUrl = $primary ? (str_starts_with($primary->path, 'http') ? $primary->path : asset('storage/' . $primary->path)) : null;
-                            $bg = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0';
-                            $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾';
+                            $bg = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'hamster' => '#FFF3E0', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0';
+                            $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'hamster' => '🐹', 'other' => '🐾'][$pet->species] ?? '🐾';
                         @endphp
                         <a href="{{ route('pets.show', $pet) }}" style="display:block;">
                             <div class="hero-card" style="height:100%;">
@@ -1006,16 +946,17 @@
                             </div>
                         </a>
                     @endforeach
-
                 @else
-                    <div class="hero-card featured">
-                        <div class="hero-card-img" style="background:#E1F5EE;">🐕</div>
-                        <div>
-                            <div class="featured-badge">✓ Available</div>
-                            <div class="hero-card-name">Pets waiting for you</div>
-                            <div class="hero-card-breed">Browse our shelter to find your match</div>
+                    {{-- Fallback placeholders --}}
+                    @foreach(['🐕', '🐈', '🐇', '🐦'] as $emoji)
+                        <div class="hero-card">
+                            <div class="hero-card-img" style="background:#E1F5EE;font-size:52px;">{{ $emoji }}</div>
+                            <div class="hero-card-body">
+                                <div class="hero-card-name">Coming soon</div>
+                                <div class="hero-card-breed">Check back later</div>
+                            </div>
                         </div>
-                    </div>
+                    @endforeach
                 @endif
             </div>
         </div>
