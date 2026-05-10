@@ -72,7 +72,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Weight (kg)</label>
-                        <input class="form-input" type="number" step="0.1" min="0" name="weight_kg"
+                        <input class="form-input" type="number" step="0.01" min="0" name="weight_kg"
                             value="{{ old('weight_kg', $pet->weight_kg ?? '') }}" placeholder="e.g. 12.5">
                     </div>
                 </div>
