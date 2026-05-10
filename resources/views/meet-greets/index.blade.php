@@ -24,7 +24,7 @@
                                 <option value="">Select an application…</option>
                                 @foreach($openApplications as $app)
                                     <option value="{{ $app->id }}" {{ old('application_id') == $app->id ? 'selected' : '' }}>
-                                        {{ $app->user->name }} → {{ $app->pet->name }}
+                                        {{ $app->user->name ?? 'Unknown' }} → {{ $app->pet->name ?? 'Deleted pet' }}
                                         ({{ ucfirst(str_replace('_', ' ', $app->status)) }})
                                     </option>
                                 @endforeach
@@ -118,18 +118,20 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('pets.show', $mg->application->pet) }}"
-                                                style="font-weight:500;color:var(--green);">
-                                                {{ $mg->application->pet->name }}
-                                            </a>
+                                            @if($mg->application->pet)
+                                                <a href="{{ route('pets.show', $mg->application->pet) }}"
+                                                    style="font-weight:500;color:var(--green);">
+                                                    {{ $mg->application->pet->name }}
+                                                </a>
+                                            @else
+                                                <span style="color:#888;">Deleted pet</span>
+                                            @endif
                                         </td>
-                                        <td>{{ $mg->application->user->name }}</td>
+                                        <td>{{ $mg->application->user->name ?? 'Unknown' }}</td>
                                         @if(auth()->user()->isAdmin())
                                             <td>{{ $mg->volunteer?->name ?? '—' }}</td>
                                         @endif
-                                        <td style="font-size:12px;color:#666;">
-                                            {{ $mg->notes ?? '—' }}
-                                        </td>
+                                        <td style="font-size:12px;color:#666;">{{ $mg->notes ?? '—' }}</td>
                                         <td>
                                             <div class="flex gap-8">
                                                 <form method="POST" action="{{ route('home-visits.updateStatus', $mg) }}">
@@ -138,7 +140,7 @@
                                                     <button class="btn btn-primary btn-sm">Mark complete</button>
                                                 </form>
                                                 <form method="POST" action="{{ route('home-visits.updateStatus', $mg) }}"
-                                                    data-confirm="Cancel this visit for {{ $mg->application->pet->name }}?"
+                                                    data-confirm="Cancel this visit for {{ $mg->application->pet->name ?? 'this pet' }}?"
                                                     data-title="Cancel visit" data-confirm-text="Yes, cancel">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="cancelled">
@@ -185,12 +187,16 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('pets.show', $mg->application->pet) }}"
-                                                style="font-weight:500;color:var(--green);">
-                                                {{ $mg->application->pet->name }}
-                                            </a>
+                                            @if($mg->application->pet)
+                                                <a href="{{ route('pets.show', $mg->application->pet) }}"
+                                                    style="font-weight:500;color:var(--green);">
+                                                    {{ $mg->application->pet->name }}
+                                                </a>
+                                            @else
+                                                <span style="color:#888;">Deleted pet</span>
+                                            @endif
                                         </td>
-                                        <td>{{ $mg->application->user->name }}</td>
+                                        <td>{{ $mg->application->user->name ?? 'Unknown' }}</td>
                                         @if(auth()->user()->isAdmin())
                                             <td>{{ $mg->volunteer?->name ?? '—' }}</td>
                                         @endif
