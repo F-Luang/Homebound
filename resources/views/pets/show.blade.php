@@ -118,7 +118,17 @@
 
                                             {{-- Apply card --}}
                                             @auth
-                                                @if($pet->status === 'available' && !auth()->user()->isAdmin())
+                                                @if(auth()->user()->isAdmin())
+                                                    {{-- Admins see the real status, no apply form --}}
+                                                    @if($pet->status !== 'available')
+                                                        <div class="card" style="margin-bottom:16px;text-align:center;padding:28px;">
+                                                            <div style="font-size:13px;color:#888;">
+                                                                {{ $pet->status === 'pending' ? 'This pet has a pending adoption.' : 'This pet has been adopted.' }}
+                                                                💛
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @elseif($pet->status === 'available')
                                                     <div class="card" style="margin-bottom:16px;">
                                                         <div style="font-family:'Lora',serif;font-size:16px;font-weight:600;margin-bottom:6px;">
                                                             Adopt {{ $pet->name }}
