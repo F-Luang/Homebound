@@ -6,8 +6,8 @@
         <div class="page-header">
             <div class="page-title">{{ auth()->user()->isAdmin() ? 'All applications' : 'My applications' }}</div>
             <div class="page-sub">{{ auth()->user()->isAdmin()
-    ? 'Review and advance each application through the workflow.'
-    : 'Track the status of your adoption applications.' }}</div>
+        ? 'Review and advance each application through the workflow.'
+        : 'Track the status of your adoption applications.' }}</div>
         </div>
 
         @if($applications->isEmpty())
@@ -22,8 +22,8 @@
                 </div>
                 <div class="text-muted" style="margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto;">
                     {{ auth()->user()->isAdmin()
-        ? 'Applications from adopters will appear here once they start applying.'
-        : 'You haven\'t applied for any pets yet. Browse available pets and start your adoption journey.' }}
+                ? 'Applications from adopters will appear here once they start applying.'
+                : 'You haven\'t applied for any pets yet. Browse available pets and start your adoption journey.' }}
                 </div>
                 @if(!auth()->user()->isAdmin())
                     <a href="{{ route('pets.index') }}" class="btn btn-primary">Browse pets</a>
@@ -34,90 +34,91 @@
 
             {{-- ===== ADOPTER VIEW — status tracker per application ===== --}}
             @if(!auth()->user()->isAdmin())
+                @php
+                    $stages = [
+                        'pending' => ['label' => 'Submitted', 'step' => 1],
+                        'under_review' => ['label' => 'Under review', 'step' => 2],
+                        'meet_greet' => ['label' => 'Meet & greet', 'step' => 3],
+                        'home_check' => ['label' => 'Home check', 'step' => 4],
+                        'approved' => ['label' => 'Approved', 'step' => 5],
+                        'completed' => ['label' => 'Completed', 'step' => 5],
+                        'rejected' => ['label' => 'Rejected', 'step' => 0],
+                    ];
+                @endphp
+
+                <div style="display:flex;flex-direction:column;gap:16px;">
+                    @foreach($applications as $app)
                         @php
-                $stages = [
-                    'pending' => ['label' => 'Submitted', 'step' => 1],
-                    'under_review' => ['label' => 'Under review', 'step' => 2],
-                    'meet_greet' => ['label' => 'Meet & greet', 'step' => 3],
-                    'home_check' => ['label' => 'Home check', 'step' => 4],
-                    'approved' => ['label' => 'Approved', 'step' => 5],
-                    'completed' => ['label' => 'Completed', 'step' => 5],
-                    'rejected' => ['label' => 'Rejected', 'step' => 0],
-                ];
+                            $current = $stages[$app->status] ?? ['step' => 1, 'label' => ucfirst($app->status)];
+                            $isRejected = $app->status === 'rejected';
                         @endphp
+                        <div class="card">
+                            {{-- Pet info row --}}
+                            <div class="flex items-center justify-between" style="margin-bottom:20px;">
+                                <div class="flex items-center gap-12">
+                                    <div
+                                        style="width:44px;height:44px;border-radius:10px;background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$app->pet->species] ?? '#F5F4F0' }};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+                                        {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$app->pet->species] ?? '🐾' }}
+                                    </div>
+                                    <div>
+                                        <div style="font-family:'Lora',serif;font-weight:600;font-size:16px;">
+                                            @if($app->pet)
+                                                <a href="{{ route('pets.show', $app->pet) }}"
+                                                    style="color:var(--green);">{{ $app->pet->name }}</a>
+                                            @else
+                                                <span style="color:#888;">Deleted pet</span>
+                                            @endif
+                                        </div>
+                                        <div style="font-size:12px;color:#888;">Applied {{ $app->submitted_at->format('M j, Y') }}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-8">
+                                    <span class="badge badge-{{ str_replace(['_', ' '], '-', $app->status) }}">
+                                        {{ ucfirst(str_replace('_', ' ', $app->status)) }}
+                                    </span>
+                                    @if($app->status === 'pending')
+                                        <form method="POST" action="{{ route('applications.cancel', $app) }}"
+                                            data-confirm="Are you sure you want to cancel this application?">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
 
-                        <div style="display:flex;flex-direction:column;gap:16px;">
-                            @foreach($applications as $app)
-                                            @php
-                                $current = $stages[$app->status] ?? ['step' => 1, 'label' => ucfirst($app->status)];
-                                $isRejected = $app->status === 'rejected';
-                                            @endphp
-                                            <div class="card">
-                                                {{-- Pet info row --}}
-                                                <div class="flex items-center justify-between" style="margin-bottom:20px;">
-                                                    <div class="flex items-center gap-12">
-                                                        <div
-                                                            style="width:44px;height:44px;border-radius:10px;background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$app->pet->species] ?? '#F5F4F0' }};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
-                                                            {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$app->pet->species] ?? '🐾' }}
-                                                        </div>
-                                                        <div>
-                                                            <div style="font-family:'Lora',serif;font-weight:600;font-size:16px;">
-                                                                @if($app->pet)
-                                                                    <a href="{{ route('pets.show', $app->pet) }}" style="color:var(--green);">{{ $app->pet->name }}</a>
-                                                                @else
-                                                                    <span style="color:#888;">Deleted pet</span>
-                                                                @endif
-                                                            </div>
-                                                            <div style="font-size:12px;color:#888;">Applied {{ $app->submitted_at->format('M j, Y') }}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex items-center gap-8">
-                                                        <span class="badge badge-{{ str_replace(['_', ' '], '-', $app->status) }}">
-                                                            {{ ucfirst(str_replace('_', ' ', $app->status)) }}
-                                                        </span>
-                                                        @if($app->status === 'pending')
-                                                            <form method="POST" action="{{ route('applications.cancel', $app) }}"
-                                                                data-confirm="Are you sure you want to cancel this application?">
-                                                                @csrf @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                                                            </form>
-                                                        @endif
-                                                    </div>
-                                                </div>
-
-                                                {{-- Step tracker --}}
-                                                @if(!$isRejected)
-                                                    <div class="steps" style="margin-bottom:0;">
-                                                        @foreach(['Submitted', 'Under review', 'Meet & greet', 'Home check', 'Approved'] as $i => $label)
-                                                            @php $stepNum = $i + 1; @endphp
-                                                            <div
-                                                                class="step {{ $current['step'] > $stepNum ? 'done' : ($current['step'] === $stepNum ? 'current' : '') }}">
-                                                                <div class="step-circle">
-                                                                    @if($current['step'] > $stepNum) ✓ @else {{ $stepNum }} @endif
-                                                                </div>
-                                                                <div class="step-label">{{ $label }}</div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                @else
-                                                    <div
-                                                        style="padding:12px 16px;background:var(--coral-light);border-radius:8px;font-size:13px;color:var(--coral);text-align:center;">
-                                                        This application was not approved. Feel free to browse other pets.
-                                                    </div>
-                                                @endif
-
-                                                {{-- View detail button --}}
-                                                <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(0,0,0,0.06);">
-                                                    <a href="{{ route('applications.show', $app) }}" class="btn btn-sm" style="font-size:12px;">
-                                                        View full details →
-                                                    </a>
-                                                </div>
-
+                            {{-- Step tracker --}}
+                            @if(!$isRejected)
+                                <div class="steps" style="margin-bottom:0;">
+                                    @foreach(['Submitted', 'Under review', 'Meet & greet', 'Home check', 'Approved'] as $i => $label)
+                                        @php $stepNum = $i + 1; @endphp
+                                        <div
+                                            class="step {{ $current['step'] > $stepNum ? 'done' : ($current['step'] === $stepNum ? 'current' : '') }}">
+                                            <div class="step-circle">
+                                                @if($current['step'] > $stepNum) ✓ @else {{ $stepNum }} @endif
                                             </div>
-                            @endforeach
-                        </div>
+                                            <div class="step-label">{{ $label }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div
+                                    style="padding:12px 16px;background:var(--coral-light);border-radius:8px;font-size:13px;color:var(--coral);text-align:center;">
+                                    This application was not approved. Feel free to browse other pets.
+                                </div>
+                            @endif
 
-                        <div style="margin-top:20px;">{{ $applications->links() }}</div>
+                            {{-- View detail button --}}
+                            <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(0,0,0,0.06);">
+                                <a href="{{ route('applications.show', $app) }}" class="btn btn-sm" style="font-size:12px;">
+                                    View full details →
+                                </a>
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+
+                <div style="margin-top:20px;">{{ $applications->links() }}</div>
 
 
             @else
@@ -208,13 +209,13 @@
                             <tbody>
                                 @foreach($applications as $app)
                                     @php
-            $next = [
-                'pending' => 'under_review',
-                'under_review' => 'meet_greet',
-                'meet_greet' => 'home_check',
-                'home_check' => 'approved',
-                'approved' => 'completed',
-            ][$app->status] ?? null;
+                                        $next = [
+                                            'pending' => 'under_review',
+                                            'under_review' => 'meet_greet',
+                                            'meet_greet' => 'home_check',
+                                            'home_check' => 'approved',
+                                            'approved' => 'completed',
+                                        ][$app->status] ?? null;
                                     @endphp
                                     <tr>
                                         <td>
@@ -228,9 +229,12 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ route('pets.show', $app->pet) }}" style="font-weight:500;color:var(--green);">
-                                                {{ $app->pet->name }}
-                                            </a>
+                                            @if($app->pet)
+                                                <a href="{{ route('pets.show', $app->pet) }}"
+                                                    style="color:var(--green);">{{ $app->pet->name }}</a>
+                                            @else
+                                                <span style="color:#888;">Deleted pet</span>
+                                            @endif
                                             <div style="font-size:11px;color:#888;">{{ ucfirst($app->pet->species) }}</div>
                                         </td>
                                         <td style="color:#888;font-size:12px;">{{ $app->submitted_at->format('M j, Y') }}</td>
