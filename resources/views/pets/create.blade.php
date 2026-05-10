@@ -225,7 +225,7 @@
                                             </div>
                                         @endif
                                         <form method="POST" action="{{ route('pet-images.destroy', [$pet, $img]) }}"
-                                            onsubmit="return confirm('Delete this photo?')">
+                                            onsubmit="return confirm('Remove this photo permanently? This cannot be undone.')">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-danger btn-sm" style="width:100%;font-size:10px;padding:3px 0;">
                                                 Delete
