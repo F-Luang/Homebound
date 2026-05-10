@@ -56,4 +56,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+    Route::get('/verify-code', [RegisteredUserController::class, 'showVerificationForm'])
+        ->name('verification.code.show');
+    Route::post('/verify-code', [RegisteredUserController::class, 'verifyCode'])
+        ->name('verification.code.verify');
+    Route::post('/verify-code/resend', [RegisteredUserController::class, 'resendCode'])
+        ->name('verification.code.resend');
 });

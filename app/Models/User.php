@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;  // ADD THIS
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -18,12 +18,15 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'is_approved',  // ADD THIS — needed for mass assignment from seeders/factories
+        'is_approved',
+        'verification_code',
+        'verification_code_expires_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'verification_code',
     ];
 
     protected function casts(): array
@@ -31,9 +34,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_approved' => 'boolean',  // ADD THIS
+            'is_approved' => 'boolean',
+            'verification_code_expires_at' => 'datetime',
         ];
     }
+
     public function isPendingApproval(): bool
     {
         return $this->role === 'volunteer' && !$this->is_approved;
