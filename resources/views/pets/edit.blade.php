@@ -238,6 +238,7 @@
                                             <form method="POST" action="{{ route('pet-images.setPrimary', [$pet, $img]) }}">
                                                 @csrf @method('PATCH')
                                                 <button class="btn btn-sm" style="width:100%;font-size:10px;padding:3px 0;">
+                                                <button class="btn btn-sm" style="width:100%;font-size:10px;padding:3px 0;">
                                                     Set as main
                                                 </button>
                                             </form>

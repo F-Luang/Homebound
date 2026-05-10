@@ -109,7 +109,7 @@ class PetController extends Controller
             'hypoallergenic' => 'boolean',
             'is_senior' => 'boolean',
             'images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
-            'weight_kg' => 'nullable|numeric|min:0.01',
+            'weight_kg' => 'nullable|numeric|min:0.001',
             'food' => 'nullable|string|max:255',
             'feeding_time' => 'nullable|string|max:255',
             'water' => 'nullable|string|max:255',
