@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class PetController extends Controller
 {
@@ -15,7 +14,7 @@ class PetController extends Controller
     public function index(Request $request): View
     {
         $pets = Pet::with('images')
-            ->whereIn('status', ['available', 'pending']) // ← exclude adopted
+            ->whereIn('status', ['available', 'pending'])
             ->when($request->species, fn($q) => $q->where('species', $request->species))
             ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
@@ -33,8 +32,8 @@ class PetController extends Controller
     public function show(Pet $pet): View
     {
         $pet->load([
-            'images',                                                    // ← all images for gallery
-            'primaryImage',                                              // ← main display photo
+            'images',
+            'primaryImage',
             'medicalRecords' => fn($q) => $q->latest('record_date'),
         ]);
         return view('pets.show', compact('pet'));
@@ -74,26 +73,25 @@ class PetController extends Controller
         // Handle new image uploads
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $result = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                    $image->getRealPath(),
-                    [
-                        'folder' => 'homebound/pets',
-                        'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $index,
-                    ]
-                );
+                $publicId = 'homebound/pets/pet_' . $pet->id . '_' . time() . '_' . $index;
+
+                Storage::disk('cloudinary')->putFileAs('', $image, $publicId);
+
+                $url = Storage::disk('cloudinary')->url($publicId);
 
                 $pet->images()->create([
-                    'path' => $result->getSecurePath(),
+                    'path' => $url,
                     'is_primary' => $index === 0,
                 ]);
             }
         }
+
         return redirect()->route('pets.show', $pet)->with('success', 'Pet added successfully.');
     }
 
     public function edit(Pet $pet): View
     {
-        $pet->load('images'); // ← add this
+        $pet->load('images');
         return view('pets.edit', compact('pet'));
     }
 
@@ -124,21 +122,18 @@ class PetController extends Controller
         $pet->update($validated);
 
         // ADD new photos — never delete existing ones here
-        // Deletion is handled individually by PetImageController@destroy
         if ($request->hasFile('images')) {
             $hasPrimary = $pet->images()->where('is_primary', true)->exists();
 
             foreach ($request->file('images') as $i => $file) {
-                $result = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                    $file->getRealPath(),
-                    [
-                        'folder' => 'homebound/pets',
-                        'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $i,
-                    ]
-                );
+                $publicId = 'homebound/pets/pet_' . $pet->id . '_' . time() . '_' . $i;
+
+                Storage::disk('cloudinary')->putFileAs('', $file, $publicId);
+
+                $url = Storage::disk('cloudinary')->url($publicId);
 
                 $pet->images()->create([
-                    'path' => $result->getSecurePath(),
+                    'path' => $url,
                     'is_primary' => !$hasPrimary && $i === 0,
                 ]);
 
