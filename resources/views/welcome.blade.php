@@ -330,6 +330,13 @@
             align-items: center;
             justify-content: center;
             font-size: 52px;
+            overflow: hidden;
+        }
+
+        .hero-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .hero-card-body {
@@ -392,6 +399,14 @@
             background: white;
             flex-shrink: 0;
             font-size: 36px;
+            overflow: hidden;
+        }
+
+        .hero-card.featured .hero-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
         }
 
         .featured-badge {
@@ -495,10 +510,6 @@
             font-size: 13px;
             color: var(--muted);
             line-height: 1.6;
-        }
-
-        .step-connector {
-            display: none;
         }
 
         /* ===== ROLES ===== */
@@ -669,7 +680,6 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: var(--green-light);
             border: 2px solid var(--green);
             display: flex;
             align-items: center;
@@ -911,12 +921,8 @@
                     adoption journey — all in one place.
                 </p>
                 <div class="hero-actions">
-                    <a href="{{ route('pets.index') }}" class="btn-primary">
-                        Browse pets →
-                    </a>
-                    <a href="#how-it-works" class="btn-secondary">
-                        How it works
-                    </a>
+                    <a href="{{ route('pets.index') }}" class="btn-primary">Browse pets →</a>
+                    <a href="#how-it-works" class="btn-secondary">How it works</a>
                 </div>
                 <div class="hero-stats">
                     <div>
@@ -938,15 +944,17 @@
                 @if(isset($featuredPets) && $featuredPets->count() > 0)
 
                     {{-- Featured card — first pet --}}
-                    @php $first = $featuredPets->first();
-    $firstPrimary = $first->images->firstWhere('is_primary', true) ?? $first->images->first(); @endphp
+                    @php
+                        $first = $featuredPets->first();
+                        $firstPrimary = $first->images->firstWhere('is_primary', true) ?? $first->images->first();
+                        $firstImgUrl = $firstPrimary ? (str_starts_with($firstPrimary->path, 'http') ? $firstPrimary->path : asset('storage/' . $firstPrimary->path)) : null;
+                    @endphp
                     <a href="{{ route('pets.show', $first) }}" style="display:contents;">
                         <div class="hero-card featured">
                             <div class="hero-card-img"
                                 style="background:{{ ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$first->species] ?? '#F5F4F0' }};">
-                                @if($firstPrimary)
-                                    <img src="{{ asset('storage/' . $firstPrimary->path) }}"
-                                        style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                                @if($firstImgUrl)
+                                    <img src="{{ $firstImgUrl }}" alt="{{ $first->name }}">
                                 @else
                                     {{ ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$first->species] ?? '🐾' }}
                                 @endif
@@ -955,8 +963,8 @@
                                 <div class="featured-badge">✓ Available</div>
                                 <div class="hero-card-name">{{ $first->name }}</div>
                                 <div class="hero-card-breed">
-                                    {{ $first->breed ?? ucfirst($first->species) }} · {{ floor($first->age_months / 12) }} yrs
-                                    · {{ ucfirst($first->size) }}
+                                    {{ $first->breed ?? ucfirst($first->species) }} · {{ floor($first->age_months / 12) }}
+                                    yrs · {{ ucfirst($first->size) }}
                                 </div>
                                 <div class="hero-card-tags">
                                     @if($first->good_with_kids) <span class="tag tag-green">Kid-friendly</span> @endif
@@ -970,16 +978,16 @@
                     {{-- Second and third pets --}}
                     @foreach($featuredPets->skip(1) as $pet)
                         @php
-        $primary = $pet->images->firstWhere('is_primary', true) ?? $pet->images->first();
-        $bg = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0';
-        $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾';
+                            $primary = $pet->images->firstWhere('is_primary', true) ?? $pet->images->first();
+                            $imgUrl = $primary ? (str_starts_with($primary->path, 'http') ? $primary->path : asset('storage/' . $primary->path)) : null;
+                            $bg = ['dog' => '#E1F5EE', 'cat' => '#FBEAF0', 'rabbit' => '#E6F1FB', 'bird' => '#EAF3DE', 'other' => '#F5F4F0'][$pet->species] ?? '#F5F4F0';
+                            $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾';
                         @endphp
                         <a href="{{ route('pets.show', $pet) }}" style="display:block;">
                             <div class="hero-card" style="height:100%;">
                                 <div class="hero-card-img" style="background:{{ $bg }};">
-                                    @if($primary)
-                                        <img src="{{ asset('storage/' . $primary->path) }}"
-                                            style="width:100%;height:100%;object-fit:cover;">
+                                    @if($imgUrl)
+                                        <img src="{{ $imgUrl }}" alt="{{ $pet->name }}">
                                     @else
                                         {{ $emoji }}
                                     @endif
@@ -1000,7 +1008,6 @@
                     @endforeach
 
                 @else
-                    {{-- Fallback if no pets yet --}}
                     <div class="hero-card featured">
                         <div class="hero-card-img" style="background:#E1F5EE;">🐕</div>
                         <div>
@@ -1066,7 +1073,6 @@
                 </div>
             </div>
 
-            {{-- Workflow bar --}}
             <div
                 style="margin-top:48px;padding:28px;background:white;border-radius:16px;border:0.5px solid var(--border);">
                 <div
@@ -1203,55 +1209,42 @@
 
             <div class="faq-list fade-up">
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        Do I need an account to browse pets?
-                        <span class="faq-chevron">▼</span>
-                    </div>
+                    <div class="faq-q" onclick="toggleFaq(this)">Do I need an account to browse pets?<span
+                            class="faq-chevron">▼</span></div>
                     <div class="faq-a">No — anyone can browse the pet listings and view individual pet profiles without
                         logging in. You only need to create an account when you want to submit an adoption application.
                     </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        How long does the adoption process take?
-                        <span class="faq-chevron">▼</span>
-                    </div>
+                    <div class="faq-q" onclick="toggleFaq(this)">How long does the adoption process take?<span
+                            class="faq-chevron">▼</span></div>
                     <div class="faq-a">The timeline varies depending on the pet and your situation. After submitting
                         your application, the shelter team will review it and reach out to schedule a meet & greet. The
-                        full process — from application to completion — typically takes 1 to 3 weeks.</div>
+                        full process typically takes 1 to 3 weeks.</div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        What is Smart Match?
-                        <span class="faq-chevron">▼</span>
+                    <div class="faq-q" onclick="toggleFaq(this)">What is Smart Match?<span class="faq-chevron">▼</span>
                     </div>
                     <div class="faq-a">Smart Match is our matching engine. You set your preferences — preferred species,
                         activity level, size, whether you have kids at home — and the system scores every available pet
-                        and ranks them by compatibility. It uses a two-stage approach: hard filters first (pets that
-                        don't qualify are excluded), then weighted scoring for the rest.</div>
+                        and ranks them by compatibility.</div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        Can I apply for more than one pet?
-                        <span class="faq-chevron">▼</span>
-                    </div>
+                    <div class="faq-q" onclick="toggleFaq(this)">Can I apply for more than one pet?<span
+                            class="faq-chevron">▼</span></div>
                     <div class="faq-a">Yes, you can apply for multiple pets. However, once one of your applications is
                         approved, the others will be automatically closed to ensure fair access for all adopters.</div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        How do I become a volunteer?
-                        <span class="faq-chevron">▼</span>
-                    </div>
+                    <div class="faq-q" onclick="toggleFaq(this)">How do I become a volunteer?<span
+                            class="faq-chevron">▼</span></div>
                     <div class="faq-a">Register for an account and select "Volunteer" as your role during sign-up.
                         Volunteer accounts have access to the scheduling system and can view all applications in
-                        read-only mode to assist with coordination.</div>
+                        read-only mode.</div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">
-                        What happens after my application is approved?
-                        <span class="faq-chevron">▼</span>
-                    </div>
+                    <div class="faq-q" onclick="toggleFaq(this)">What happens after my application is approved?<span
+                            class="faq-chevron">▼</span></div>
                     <div class="faq-a">After approval, the shelter team will contact you to arrange signing the adoption
                         contract and coordinate the handover of your new companion. The application will be marked as
                         "Completed" once everything is finalized.</div>
@@ -1289,18 +1282,12 @@
             if (!isOpen) item.classList.add('open');
         }
 
-        // Scroll animations
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.classList.add('visible');
-                }
-            });
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-        // Smooth nav link active state
         document.querySelectorAll('a[href^="#"]').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
