@@ -6,7 +6,7 @@ use App\Models\Pet;
 use App\Models\PetImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Storage;
 
 class PetImageController extends Controller
 {
@@ -20,14 +20,13 @@ class PetImageController extends Controller
         $hasPrimary = $pet->images()->where('is_primary', true)->exists();
 
         foreach ($request->file('images') as $i => $file) {
-            // Upload to Cloudinary
-            $result = Cloudinary::upload($file->getRealPath(), [
-                'folder' => 'homebound/pets',
-                'public_id' => 'pet_' . $pet->id . '_' . time() . '_' . $i,
-            ]);
+            $publicId = 'homebound/pets/pet_' . $pet->id . '_' . time() . '_' . $i;
+
+            Storage::disk('cloudinary')->putFileAs('', $file, $publicId);
+            $url = Storage::disk('cloudinary')->url($publicId);
 
             $pet->images()->create([
-                'path' => $result->getSecurePath(), // full https URL
+                'path' => $url,
                 'is_primary' => !$hasPrimary && $i === 0,
             ]);
 
@@ -37,23 +36,22 @@ class PetImageController extends Controller
         return back()->with('success', 'Photos uploaded successfully.');
     }
 
-    public function setPrimary(PetImage $image): RedirectResponse
+    public function setPrimary(Pet $pet, PetImage $image): RedirectResponse
     {
-        $image->pet->images()->update(['is_primary' => false]);
+        $pet->images()->update(['is_primary' => false]);
         $image->update(['is_primary' => true]);
 
         return back()->with('success', 'Primary photo updated.');
     }
 
-    public function destroy(PetImage $image): RedirectResponse
+    public function destroy(Pet $pet, PetImage $image): RedirectResponse
     {
         // Delete from Cloudinary if it's a Cloudinary URL
         if (str_contains($image->path, 'cloudinary.com')) {
             try {
-                // Extract public_id from URL
                 preg_match('/homebound\/pets\/[^.]+/', $image->path, $matches);
                 if ($matches) {
-                    Cloudinary::destroy($matches[0]);
+                    Storage::disk('cloudinary')->delete($matches[0]);
                 }
             } catch (\Exception $e) {
                 // Continue even if Cloudinary delete fails
