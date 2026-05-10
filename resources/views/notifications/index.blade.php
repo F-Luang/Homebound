@@ -29,14 +29,19 @@
                                     <span class="text-muted">· {{ $app->user->name ?? '' }}</span>
                                 @endif
                             </div>
-                            <div class="tl-desc">Status: <span
-                                    class="badge badge-{{ $app->status }}">{{ ucfirst(str_replace('-', ' ', $app->status)) }}</span>
+                            <div class="tl-desc">
+                                Status: <span class="badge badge-{{ $app->status }}">
+                                    {{ ucfirst(str_replace('_', ' ', $app->status)) }}
+                                </span>
                             </div>
                             <div class="tl-date">{{ $app->submitted_at?->diffForHumans() ?? 'Just now' }}</div>
                         </div>
                     </div>
                 @empty
-                    <p class="text-muted">No applications yet.</p>
+                    <div style="text-align:center;padding:32px 0;">
+                        <div style="font-size:24px;margin-bottom:8px;">📋</div>
+                        <p class="text-muted">No applications yet.</p>
+                    </div>
                 @endforelse
             </div>
 
@@ -54,14 +59,19 @@
                                     <span class="text-muted">· {{ $visit->application->user->name ?? '' }}</span>
                                 @endif
                             </div>
-                            <div class="tl-desc">Visit status: <span
-                                    class="badge badge-{{ $visit->status }}">{{ ucfirst($visit->status) }}</span>
+                            <div class="tl-desc">
+                                Visit status: <span class="badge badge-{{ $visit->status }}">
+                                    {{ ucfirst($visit->status) }}
+                                </span>
                             </div>
                             <div class="tl-date">{{ $visit->scheduled_at->diffForHumans() }}</div>
                         </div>
                     </div>
                 @empty
-                    <p class="text-muted">No home visits scheduled.</p>
+                    <div style="text-align:center;padding:32px 0;">
+                        <div style="font-size:24px;margin-bottom:8px;">🏠</div>
+                        <p class="text-muted">No home visits scheduled.</p>
+                    </div>
                 @endforelse
             </div>
         </div>
