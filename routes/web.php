@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PetImageController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\Auth\SocialiteController;
 
 // -------------------------------------------------------
 // Admin only — MUST come before public pet routes
@@ -57,6 +58,10 @@ Route::get('/', function () {
 Route::get('/pending-approval', function () {
     return view('auth.pending');
 })->middleware('auth')->name('volunteer.pending');
+
+// Google OAuth
+Route::get('/auth/google', [SocialiteController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [SocialiteController::class, 'handleGoogleCallback']);
 
 Route::resource('pets', PetController::class)->only(['index', 'show']);
 
