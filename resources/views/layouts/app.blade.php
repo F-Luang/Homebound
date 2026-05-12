@@ -276,10 +276,11 @@
             {{-- User + logout --}}
             <div class="sb-bottom">
                 {{-- Dark mode quick toggle --}}
-                <button onclick="toggleDarkMode()" style="width:100%;display:flex;align-items:center;gap:10px;padding:8px;
-                                                                           border-radius:8px;border:none;background:transparent;cursor:pointer;
-                                                                           color:var(--ink-3);font-family:'DM Sans',sans-serif;font-size:12px;
-                                                                           margin-bottom:4px;transition:background 0.15s;"
+                <button onclick="toggleDarkMode()"
+                    style="width:100%;display:flex;align-items:center;gap:10px;padding:8px;
+                                                                                           border-radius:8px;border:none;background:transparent;cursor:pointer;
+                                                                                           color:var(--ink-3);font-family:'DM Sans',sans-serif;font-size:12px;
+                                                                                           margin-bottom:4px;transition:background 0.15s;"
                     onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
                     <span id="theme-icon" style="font-size:14px;">🌙</span>
                     <span id="theme-label">Dark mode</span>
@@ -287,7 +288,12 @@
                 <a href="{{ route('profile.edit') }}"
                     style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;margin-bottom:4px;transition:background 0.15s;text-decoration:none;"
                     onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
-                    <div class="sb-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                    @if($user->avatar)
+                        <img src="{{ $user->avatar }}" alt="{{ $user->name }}" class="sb-avatar"
+                            style="object-fit:cover;border-radius:50%;">
+                    @else
+                        <div class="sb-avatar">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                    @endif
                     <div>
                         <div class="sb-uname">{{ $user->name }}</div>
                         <div class="sb-role">{{ ucfirst($user->role) }} · Edit profile</div>
