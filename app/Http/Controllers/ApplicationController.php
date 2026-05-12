@@ -67,15 +67,17 @@ class ApplicationController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Prevent duplicate open applications
+        // Prevent duplicate open applications — friendly redirect instead of crash
         $exists = Application::where('user_id', auth()->id())
             ->where('pet_id', $request->pet_id)
             ->whereNotIn('status', ['rejected', 'completed'])
             ->exists();
 
-        abort_if($exists, 409, 'You already have an open application for this pet.');
+        if ($exists) {
+            return back()->withErrors(['application' => 'You already have an open application for this pet.']);
+        }
 
-        $application = Application::create([   // ← assign to $application
+        $application = Application::create([
             'user_id' => auth()->id(),
             'pet_id' => $request->pet_id,
             'notes' => $request->notes,
@@ -83,11 +85,14 @@ class ApplicationController extends Controller
             'submitted_at' => now(),
         ]);
 
-        // Load pet relationship before sending email
         $application->load('pet');
 
-        // Send confirmation email to adopter
-        Mail::to($request->user())->send(new ApplicationSubmitted($application));
+        // Send confirmation email — don't crash if mail fails
+        try {
+            Mail::to($request->user())->send(new ApplicationSubmitted($application));
+        } catch (\Exception $e) {
+            // Mail failed silently — application is still submitted
+        }
 
         return redirect()->route('applications.index')->with('success', 'Application submitted!');
     }
@@ -97,7 +102,6 @@ class ApplicationController extends Controller
     {
         $request->validate(['status' => 'required|string', 'notes' => 'nullable|string']);
 
-        // Enforce valid transitions — no skipping stages
         $transitions = [
             'pending' => ['under_review', 'rejected'],
             'under_review' => ['meet_greet', 'rejected'],
@@ -113,10 +117,15 @@ class ApplicationController extends Controller
             'status' => $request->status,
             'notes' => $request->notes ?? $application->notes,
         ]);
-        // Send status update email to adopter
-        Mail::to($application->user)->send(new ApplicationStatusUpdated($application));
 
-        // When approved — lock pet and reject all competing applications
+        // Send status update email — don't crash if mail fails
+        try {
+            Mail::to($application->user)->send(new ApplicationStatusUpdated($application));
+        } catch (\Exception $e) {
+            // Mail failed silently
+        }
+
+        // When approved — lock pet and reject competing applications
         if ($request->status === 'approved') {
             $application->pet->update(['status' => 'pending']);
 
@@ -133,19 +142,22 @@ class ApplicationController extends Controller
 
         return back()->with('success', 'Application updated.');
     }
+
     public function cancel(Application $application)
     {
         if ($application->user_id !== auth()->id())
             abort(403);
+
         if ($application->status !== 'pending') {
             return back()->with('error', 'Only pending applications can be cancelled.');
         }
+
         $application->delete();
         return back()->with('success', 'Application cancelled.');
     }
+
     public function show(Application $application): View
     {
-        // Adopters can only see their own
         if (auth()->user()->role === 'adopter' && $application->user_id !== auth()->id()) {
             abort(403);
         }
