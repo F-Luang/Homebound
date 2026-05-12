@@ -8,13 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureVolunteerIsApproved
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = auth()->user();
+
+        if ($user && $user->isPendingApproval()) {
+            // Allow logout route so they're not trapped
+            if ($request->routeIs('logout')) {
+                return $next($request);
+            }
+            return redirect()->route('volunteer.pending');
+        }
+
         return $next($request);
     }
 }
