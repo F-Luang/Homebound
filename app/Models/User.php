@@ -21,6 +21,8 @@ class User extends Authenticatable
         'is_approved',
         'verification_code',
         'verification_code_expires_at',
+        'phone',
+        'avatar',
     ];
 
     protected $hidden = [

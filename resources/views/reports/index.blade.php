@@ -111,6 +111,7 @@
                         'cat' => ['bg' => '#FBEAF0', 'border' => '#E8A0B0', 'icon' => 'cat.png'],
                         'rabbit' => ['bg' => '#E6F1FB', 'border' => '#185FA5', 'icon' => 'rabbit.png'],
                         'bird' => ['bg' => '#EAF3DE', 'border' => '#3B6D11', 'icon' => 'bird.png'],
+                        'hamster' => ['bg' => '#ffefd1', 'border' => '#6d4811', 'icon' => 'hamster.png'],
                         'other' => ['bg' => '#F5F4F0', 'border' => '#888', 'icon' => 'paws.png'],
                     ];
                     $totalSpecies = $speciesBreakdown->sum('total') ?: 1;
