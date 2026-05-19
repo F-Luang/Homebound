@@ -43,18 +43,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // Public routes — after admin routes
 // -------------------------------------------------------
 Route::get('/', function () {
-    // One query: fetch the most-recently-added available pet for each featured species.
-    // We pull the top-N rows ordered by id desc, then keep only the first per species.
-    $featuredSpecies = ['dog', 'cat', 'rabbit', 'bird'];
-
+    // Single query — fetch the most-recently-added available pet for each featured species.
     $featuredPets = \App\Models\Pet::with('images')
         ->where('status', 'available')
-        ->whereIn('species', $featuredSpecies)
+        ->whereIn('species', ['dog', 'cat', 'rabbit', 'bird'])
         ->orderByDesc('id')
         ->get()
-        ->unique('species')        // one per species (latest wins due to ordering)
-        ->keyBy('species')         // keyed so the view can look up by name if needed
-        ->only($featuredSpecies);  // preserve the desired display order
+        ->unique('species')  // keep only the latest pet per species
+        ->values();          // reset to a clean 0-indexed collection for the view
 
     return view('welcome', compact('featuredPets'));
 })->name('home');
