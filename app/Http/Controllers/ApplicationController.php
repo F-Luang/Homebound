@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Mail\ApplicationSubmitted;
 use App\Mail\ApplicationStatusUpdated;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class ApplicationController extends Controller
@@ -16,7 +17,7 @@ class ApplicationController extends Controller
     public function index(Request $request): View
     {
         if (auth()->user()->isAdmin()) {
-            $applications = Application::with(['user', 'pet'])
+            $applications = Application::with(['user', 'pet', 'pet.images', 'meetGreet'])
                 ->whereHas('pet')
                 ->whereHas('user')
                 ->when(
@@ -50,7 +51,7 @@ class ApplicationController extends Controller
                 ->latest('submitted_at')
                 ->paginate(20);
         } else {
-            $applications = Application::with('pet')
+            $applications = Application::with(['pet', 'pet.images', 'meetGreet'])
                 ->whereHas('pet')
                 ->where('user_id', auth()->id())
                 ->latest('submitted_at')
@@ -70,7 +71,7 @@ class ApplicationController extends Controller
         // Prevent duplicate open applications — friendly redirect instead of crash
         $exists = Application::where('user_id', auth()->id())
             ->where('pet_id', $request->pet_id)
-            ->whereNotIn('status', ['rejected', 'completed'])
+            ->whereNotIn('status', ['rejected', 'completed', 'cancelled'])
             ->exists();
 
         if ($exists) {
@@ -100,8 +101,6 @@ class ApplicationController extends Controller
     // Admin only
     public function updateStatus(Request $request, Application $application): RedirectResponse
     {
-        $request->validate(['status' => 'required|string', 'notes' => 'nullable|string']);
-
         $transitions = [
             'pending' => ['under_review', 'rejected'],
             'under_review' => ['meet_greet', 'rejected'],
@@ -111,33 +110,39 @@ class ApplicationController extends Controller
         ];
 
         $allowed = $transitions[$application->status] ?? [];
-        abort_unless(in_array($request->status, $allowed), 422, 'Invalid status transition.');
 
-        $application->update([
-            'status' => $request->status,
-            'notes' => $request->notes ?? $application->notes,
+        $request->validate([
+            'status' => ['required', 'string', 'in:' . implode(',', $allowed)],
+            'notes'  => 'nullable|string',
         ]);
 
-        // Send status update email — don't crash if mail fails
+        DB::transaction(function () use ($request, $application) {
+            $application->update([
+                'status' => $request->status,
+                'notes'  => $request->notes ?? $application->notes,
+            ]);
+
+            // When approved — lock pet and reject all competing open applications
+            if ($request->status === 'approved') {
+                $application->pet->update(['status' => 'pending']);
+
+                Application::where('pet_id', $application->pet_id)
+                    ->where('id', '!=', $application->id)
+                    ->whereNotIn('status', ['rejected', 'completed', 'cancelled'])
+                    ->update(['status' => 'rejected']);
+            }
+
+            // When completed — mark pet as adopted
+            if ($request->status === 'completed') {
+                $application->pet->update(['status' => 'adopted']);
+            }
+        });
+
+        // Send status update email outside transaction — don't crash if mail fails
         try {
             Mail::to($application->user)->send(new ApplicationStatusUpdated($application));
         } catch (\Exception $e) {
-            // Mail failed silently
-        }
-
-        // When approved — lock pet and reject competing applications
-        if ($request->status === 'approved') {
-            $application->pet->update(['status' => 'pending']);
-
-            Application::where('pet_id', $application->pet_id)
-                ->where('id', '!=', $application->id)
-                ->whereNotIn('status', ['rejected', 'completed'])
-                ->update(['status' => 'rejected']);
-        }
-
-        // When completed — mark pet as adopted
-        if ($request->status === 'completed') {
-            $application->pet->update(['status' => 'adopted']);
+            // Mail failed silently — status update already persisted
         }
 
         return back()->with('success', 'Application updated.');
@@ -152,7 +157,7 @@ class ApplicationController extends Controller
             return back()->with('error', 'Only pending applications can be cancelled.');
         }
 
-        $application->delete();
+        $application->update(['status' => 'cancelled']);
         return back()->with('success', 'Application cancelled.');
     }
 

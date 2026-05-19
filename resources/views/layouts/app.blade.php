@@ -42,7 +42,7 @@
             }
         @endphp
 
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" style="view-transition-name:sidebar;">
             {{-- Logo --}}
             <a href="{{ route('home') }}" class="sb-logo">
                 <img src="{{ asset('assets/Homebound.png') }}" alt="Homebound"
@@ -309,7 +309,7 @@
 
 
     {{-- ===== MAIN CONTENT ===== --}}
-    <div class="main-content">
+    <div class="main-content" style="view-transition-name:main-content;">
 
         {{-- Mobile top bar (shown only on mobile when logged in) --}}
         @auth
@@ -549,6 +549,64 @@
                 showToast(@json(session('info')), 'info');
             @endif
             });
+    </script>
+
+    {{-- ===== NAVIGATION PROGRESS BAR (fallback for non-VT browsers) ===== --}}
+    <script>
+        (function () {
+            // View Transitions API already handles visual feedback natively —
+            // only show the progress bar on browsers that don't support it.
+            if ('startViewTransition' in document) return;
+
+            var bar = document.createElement('div');
+            bar.id = 'nav-progress';
+            document.body.appendChild(bar);
+
+            var rafTimer;
+
+            function startProgress() {
+                clearTimeout(rafTimer);
+                bar.style.transition = 'none';
+                bar.style.opacity = '1';
+                bar.style.width = '0%';
+
+                // Small delay so the browser paints the reset before we animate
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        bar.style.transition = 'width 250ms ease, opacity 300ms ease';
+                        bar.style.width = '25%';
+                        // Crawl toward 80% — gives the illusion of progress
+                        rafTimer = setTimeout(function () { bar.style.width = '65%'; }, 300);
+                        rafTimer = setTimeout(function () { bar.style.width = '80%'; }, 800);
+                    });
+                });
+            }
+
+            function finishProgress() {
+                clearTimeout(rafTimer);
+                bar.style.width = '100%';
+                setTimeout(function () { bar.style.opacity = '0'; }, 200);
+                setTimeout(function () { bar.style.width = '0%'; }, 520);
+            }
+
+            // Trigger on any same-origin link click (skip anchors, external, blank)
+            document.addEventListener('click', function (e) {
+                var link = e.target.closest('a[href]');
+                if (!link) return;
+                var href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript') ||
+                    link.target === '_blank' || link.origin !== location.origin) return;
+                if (e.ctrlKey || e.metaKey || e.shiftKey) return; // new tab / window
+                startProgress();
+            });
+
+            // Also show on form submit (page navigations triggered by forms)
+            document.addEventListener('submit', function (e) {
+                if (!e.target.closest('form[data-confirm]')) startProgress();
+            });
+
+            window.addEventListener('pageshow', finishProgress);
+        })();
     </script>
 </body>
 

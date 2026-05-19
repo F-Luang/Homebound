@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   Cross-document View Transitions
+   Chrome 126+ / Edge 126+  —  graceful no-op in other browsers
+   ============================================================ */
+
+@view-transition {
+    navigation: auto;
+}
+
+/* ── Sidebar: identical on every page, so freeze it in place ── */
+::view-transition-group(sidebar) {
+    animation-duration: 0s;
+}
+
+/* ── Main content: fade + tiny vertical drift ── */
+@keyframes vt-out {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes vt-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+::view-transition-old(main-content) {
+    animation: vt-out 130ms ease-in forwards;
+}
+
+::view-transition-new(main-content) {
+    animation: vt-in 220ms ease-out forwards;
+}
+
+/* Root covers anything outside named regions (e.g. <html> background).
+   Keep it static so only the named areas visually move. */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+}
+
+/* ── Navigation progress bar (non-VT browsers) ── */
+#nav-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background: var(--green, #0F6E56);
+    z-index: 9999;
+    transition: width 250ms ease, opacity 300ms ease;
+    pointer-events: none;
+}
