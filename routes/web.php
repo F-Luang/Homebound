@@ -43,14 +43,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // Public routes — after admin routes
 // -------------------------------------------------------
 Route::get('/', function () {
-    // Show one featured pet per species (most recently added)
-    $featuredPets = collect(['dog', 'cat', 'rabbit', 'bird'])->map(function ($species) {
-        return \App\Models\Pet::with('images')
-            ->where('status', 'available')
-            ->where('species', $species)
-            ->latest()
-            ->first();
-    })->filter(); // removes nulls if no pet of that species exists
+    // One query: fetch the most-recently-added available pet for each featured species.
+    // We pull the top-N rows ordered by id desc, then keep only the first per species.
+    $featuredSpecies = ['dog', 'cat', 'rabbit', 'bird'];
+
+    $featuredPets = \App\Models\Pet::with('images')
+        ->where('status', 'available')
+        ->whereIn('species', $featuredSpecies)
+        ->orderByDesc('id')
+        ->get()
+        ->unique('species')        // one per species (latest wins due to ordering)
+        ->keyBy('species')         // keyed so the view can look up by name if needed
+        ->only($featuredSpecies);  // preserve the desired display order
 
     return view('welcome', compact('featuredPets'));
 })->name('home');
@@ -89,10 +93,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
 
-// Volunteer management
-Route::get('/volunteers', [VolunteerController::class, 'index'])->name('volunteers.index');
-Route::patch('/volunteers/{user}/approve', [VolunteerController::class, 'approve'])->name('volunteers.approve');
-Route::patch('/volunteers/{user}/revoke', [VolunteerController::class, 'revoke'])->name('volunteers.revoke');
+// Volunteer management — admin only
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/volunteers', [VolunteerController::class, 'index'])->name('volunteers.index');
+    Route::patch('/volunteers/{user}/approve', [VolunteerController::class, 'approve'])->name('volunteers.approve');
+    Route::patch('/volunteers/{user}/revoke', [VolunteerController::class, 'revoke'])->name('volunteers.revoke');
+});
 
 // -------------------------------------------------------
 // Admin + Volunteer

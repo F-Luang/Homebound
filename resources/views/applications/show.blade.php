@@ -33,7 +33,7 @@
                         @php
                             $stages = ['pending','under_review','meet_greet','home_check','approved','completed'];
                             $currentIndex = array_search($application->status, $stages);
-                            if ($application->status === 'rejected') $currentIndex = -1;
+                            if (in_array($application->status, ['rejected', 'cancelled'])) $currentIndex = -1;
                         @endphp
                         @foreach($stages as $i => $stage)
                             <div class="step {{ $i < $currentIndex ? 'done' : ($i === $currentIndex ? 'current' : '') }}">
@@ -48,6 +48,10 @@
                     @if($application->status === 'rejected')
                         <div style="background:#FAECE7;border:0.5px solid #F0997B;border-radius:8px;padding:12px 14px;font-size:13px;color:#993C1D;">
                             ✕ This application has been rejected.
+                        </div>
+                    @elseif($application->status === 'cancelled')
+                        <div style="background:#F5F4F0;border:0.5px solid #ddd;border-radius:8px;padding:12px 14px;font-size:13px;color:#888;">
+                            ✕ This application was cancelled by the adopter.
                         </div>
                     @endif
                 </div>

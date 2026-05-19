@@ -46,6 +46,8 @@ class PetImageController extends Controller
 
     public function destroy(Pet $pet, PetImage $image): RedirectResponse
     {
+        $wasPrimary = $image->is_primary;
+
         // Delete from Cloudinary if it's a Cloudinary URL
         if (str_contains($image->path, 'cloudinary.com')) {
             try {
@@ -59,6 +61,14 @@ class PetImageController extends Controller
         }
 
         $image->delete();
+
+        // If we just removed the primary image, promote the next available one
+        if ($wasPrimary) {
+            $next = $pet->images()->first();
+            if ($next) {
+                $next->update(['is_primary' => true]);
+            }
+        }
 
         return back()->with('success', 'Photo removed.');
     }

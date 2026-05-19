@@ -43,6 +43,7 @@
                         'approved' => ['label' => 'Approved', 'step' => 5],
                         'completed' => ['label' => 'Completed', 'step' => 5],
                         'rejected' => ['label' => 'Rejected', 'step' => 0],
+                        'cancelled' => ['label' => 'Cancelled', 'step' => 0],
                     ];
                 @endphp
 
@@ -90,7 +91,7 @@
                             </div>
 
                             {{-- Step tracker --}}
-                            @if(!$isRejected)
+                            @if(!$isRejected && $app->status !== 'cancelled')
                                 <div class="steps" style="margin-bottom:0;">
                                     @foreach(['Submitted', 'Under review', 'Meet & greet', 'Home check', 'Approved'] as $i => $label)
                                         @php $stepNum = $i + 1; @endphp
@@ -102,6 +103,11 @@
                                             <div class="step-label">{{ $label }}</div>
                                         </div>
                                     @endforeach
+                                </div>
+                            @elseif($app->status === 'cancelled')
+                                <div
+                                    style="padding:12px 16px;background:#F5F4F0;border-radius:8px;font-size:13px;color:#888;text-align:center;">
+                                    You cancelled this application. Feel free to apply again for any available pet.
                                 </div>
                             @else
                                 <div
@@ -133,7 +139,7 @@
                             placeholder="Search by applicant name, email or pet…" value="{{ request('search') }}">
                         <select class="form-input" style="width:160px;" name="status">
                             <option value="">All statuses</option>
-                            @foreach(['pending', 'under_review', 'meet_greet', 'home_check', 'approved', 'rejected', 'completed'] as $s)
+                            @foreach(['pending', 'under_review', 'meet_greet', 'home_check', 'approved', 'rejected', 'completed', 'cancelled'] as $s)
                                 <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
                                     {{ ucfirst(str_replace('_', ' ', $s)) }}
                                 </option>
