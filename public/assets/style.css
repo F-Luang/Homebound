@@ -235,7 +235,7 @@ tr:hover td {
 
 .badge-pending {
     background: var(--amber-light);
-    color: #854F0B;
+    color: var(--amber);
 }
 
 .badge-review {
@@ -249,18 +249,18 @@ tr:hover td {
 }
 
 .badge-meet-greet {
-    background: #EEEDFE;
-    color: #3C3489;
+    background: var(--purple-light);
+    color: var(--purple);
 }
 
 .badge-home-check {
     background: var(--amber-light);
-    color: #854F0B;
+    color: var(--amber);
 }
 
 .badge-approved {
-    background: #EAF3DE;
-    color: #3B6D11;
+    background: var(--lime-light);
+    color: var(--lime);
 }
 
 .badge-rejected {
@@ -269,8 +269,8 @@ tr:hover td {
 }
 
 .badge-completed {
-    background: #EAF3DE;
-    color: #3B6D11;
+    background: var(--lime-light);
+    color: var(--lime);
 }
 
 .badge-available {
@@ -279,13 +279,19 @@ tr:hover td {
 }
 
 .badge-adopted {
-    background: #EEEDFE;
-    color: #3C3489;
+    background: var(--purple-light);
+    color: var(--purple);
+}
+
+.badge-cancelled {
+    background: var(--surface-2);
+    color: var(--ink-3);
+    border: 0.5px solid var(--border-2);
 }
 
 .badge-pending-adoption {
     background: var(--amber-light);
-    color: #854F0B;
+    color: var(--amber);
 }
 
 .form-group {
@@ -435,7 +441,7 @@ input[type="checkbox"] {
 
 .tag-amber {
     background: var(--amber-light);
-    color: #854F0B;
+    color: var(--amber);
 }
 
 .tag-blue {
@@ -1083,6 +1089,12 @@ body {
     --blue: #185FA5;
     --coral-light: #FAECE7;
     --coral: #993C1D;
+    /* Lime — approved / completed badges */
+    --lime-light: #EAF3DE;
+    --lime: #3B6D11;
+    /* Purple — meet & greet / adopted badges */
+    --purple-light: #EEEDFE;
+    --purple: #3C3489;
     --bg: #F5F4F0;
     --surface: #ffffff;
     --surface-2: #fafaf8;
@@ -1105,6 +1117,12 @@ body {
     --blue: #60A5FA;
     --coral-light: #3d0d00;
     --coral: #FC8181;
+    /* Lime — approved / completed badges */
+    --lime-light: #162d08;
+    --lime: #86efac;
+    /* Purple — meet & greet / adopted badges */
+    --purple-light: #1e1840;
+    --purple: #c4b5fd;
     --bg: #111110;
     --surface: #1c1c1a;
     --surface-2: #252523;
