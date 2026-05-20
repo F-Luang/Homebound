@@ -147,6 +147,25 @@
                                                             </div>
                                                             <button type="submit" class="btn btn-primary" style="width:100%;">Submit application</button>
                                                         </form>
+
+                                                        {{-- Save / unsave --}}
+                                                        <div style="margin-top:10px;">
+                                                            @if(isset($isSaved) && $isSaved)
+                                                                <form method="POST" action="{{ route('favourites.destroy', $pet) }}">
+                                                                    @csrf @method('DELETE')
+                                                                    <button type="submit" class="btn btn-sm" style="width:100%;gap:6px;">
+                                                                        ❤️ Saved — click to remove
+                                                                    </button>
+                                                                </form>
+                                                            @else
+                                                                <form method="POST" action="{{ route('favourites.store', $pet) }}">
+                                                                    @csrf
+                                                                    <button type="submit" class="btn btn-sm" style="width:100%;gap:6px;">
+                                                                        🤍 Save to favourites
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 @else
                                                     <div class="card" style="margin-bottom:16px;text-align:center;padding:28px;">
@@ -257,5 +276,61 @@
                                         if (e.key === 'Escape') closeLightbox();
                                     });
                                 </script>
+
+{{-- ===== DIARY / UPDATES FEED ===== --}}
+<div style="margin-top:28px;">
+    <div style="font-family:'Lora',serif;font-size:20px;font-weight:600;margin-bottom:4px;">{{ $pet->name }}'s diary</div>
+    <div class="text-muted" style="font-size:13px;margin-bottom:18px;">Updates from our shelter team.</div>
+
+    {{-- Post form (admin/volunteer only) --}}
+    @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isVolunteer()))
+        <div class="card" style="margin-bottom:18px;">
+            <form method="POST" action="{{ route('diary.store', $pet) }}" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <textarea name="content" class="form-input" rows="3" maxlength="500" required
+                        placeholder="Share an update about {{ $pet->name }}…">{{ old('content') }}</textarea>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="file" name="image" accept="image/*"
+                           style="font-size:12px;color:var(--ink-3);flex:1;">
+                    <button type="submit" class="btn btn-primary btn-sm">Post update</button>
+                </div>
+            </form>
+        </div>
+    @endif
+
+    {{-- Diary feed --}}
+    @forelse($pet->diaryEntries as $entry)
+        <div class="card" style="margin-bottom:12px;padding:16px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;">
+                    {{ strtoupper(substr($entry->postedBy->name ?? 'V', 0, 1)) }}
+                </div>
+                <div>
+                    <div style="font-size:13px;font-weight:500;">{{ $entry->postedBy->name ?? 'Volunteer' }}</div>
+                    <div style="font-size:11px;color:var(--ink-3);">{{ $entry->created_at->diffForHumans() }}</div>
+                </div>
+                @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isVolunteer()))
+                    <form method="POST" action="{{ route('diary.destroy', $entry) }}" style="margin-left:auto;">
+                        @csrf @method('DELETE')
+                        <button type="submit" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--ink-3);" title="Delete entry">×</button>
+                    </form>
+                @endif
+            </div>
+
+            @if($entry->image_path)
+                <img src="{{ $entry->image_path }}" alt="Diary photo"
+                     style="width:100%;max-height:280px;object-fit:cover;border-radius:8px;margin-bottom:10px;">
+            @endif
+
+            <div style="font-size:14px;color:var(--ink-2);line-height:1.7;">{{ $entry->content }}</div>
+        </div>
+    @empty
+        <div class="card" style="text-align:center;padding:32px;color:var(--ink-3);">
+            No updates yet — check back soon!
+        </div>
+    @endforelse
+</div>
 
 @endsection

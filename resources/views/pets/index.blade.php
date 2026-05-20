@@ -77,6 +77,23 @@
                     $emoji = ['dog' => '🐕', 'cat' => '🐈', 'rabbit' => '🐇', 'bird' => '🐦', 'other' => '🐾'][$pet->species] ?? '🐾';
                                 @endphp
 
+                                <div style="position:relative;">
+                                {{-- Heart / save button (adopters only) --}}
+                                @auth
+                                    @if(auth()->user()->role === 'adopter')
+                                        @php $saved = isset($savedPetIds) && $savedPetIds->has($pet->id); @endphp
+                                        <form method="POST"
+                                            action="{{ $saved ? route('favourites.destroy', $pet) : route('favourites.store', $pet) }}"
+                                            style="position:absolute;top:10px;right:10px;z-index:3;">
+                                            @csrf
+                                            @if($saved) @method('DELETE') @endif
+                                            <button type="submit" title="{{ $saved ? 'Remove from saved' : 'Save pet' }}"
+                                                style="background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.18);">
+                                                {{ $saved ? '❤️' : '🤍' }}
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endauth
                                 <a href="{{ route('pets.show', $pet) }}" style="display:block;">
                                     <div class="card" style="padding:0;overflow:hidden;transition:border-color 0.15s;position:relative;"
                                         onmouseover="this.style.borderColor='rgba(0,0,0,0.25)'"
@@ -132,6 +149,7 @@
                                         </div>
                                     </div>
                                 </a>
+                                </div>{{-- end relative wrapper --}}
                 @endforeach
             </div>
             <div style="margin-top:24px;">{{ $pets->withQueryString()->links() }}</div>

@@ -37,4 +37,14 @@ class Application extends Model
     {
         return $this->hasOne(MeetGreet::class);
     }
+
+    public function successStory(): HasOne
+    {
+        return $this->hasOne(SuccessStory::class);
+    }
+
+    public function checkins()
+    {
+        return $this->hasMany(AdoptionCheckin::class)->orderBy('due_at');
+    }
 }

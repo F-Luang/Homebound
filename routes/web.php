@@ -14,6 +14,11 @@ use App\Http\Controllers\PetImageController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\AdoptionCheckinController;
+use App\Http\Controllers\SuccessStoryController;
+use App\Http\Controllers\SurrenderController;
+use App\Http\Controllers\DiaryEntryController;
 
 // -------------------------------------------------------
 // Admin only — MUST come before public pet routes
@@ -87,13 +92,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/match', [MatchController::class, 'run'])->name('match.run');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    // Favourites (adopters)
+    Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourites.index');
+    Route::post('/pets/{pet}/favourite', [FavouriteController::class, 'store'])->name('favourites.store');
+    Route::delete('/pets/{pet}/favourite', [FavouriteController::class, 'destroy'])->name('favourites.destroy');
+
+    // Success Stories
+    Route::get('/stories', [SuccessStoryController::class, 'index'])->name('stories.index');
+    Route::get('/stories/create', [SuccessStoryController::class, 'create'])->name('stories.create');
+    Route::post('/stories', [SuccessStoryController::class, 'store'])->name('stories.store');
 });
 
-// Volunteer management — admin only
+// Volunteer management + admin-only new features
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/volunteers', [VolunteerController::class, 'index'])->name('volunteers.index');
     Route::patch('/volunteers/{user}/approve', [VolunteerController::class, 'approve'])->name('volunteers.approve');
     Route::patch('/volunteers/{user}/revoke', [VolunteerController::class, 'revoke'])->name('volunteers.revoke');
+
+    // Stories moderation
+    Route::patch('/stories/{story}/approve', [SuccessStoryController::class, 'approve'])->name('stories.approve');
+    Route::delete('/stories/{story}', [SuccessStoryController::class, 'destroy'])->name('stories.destroy');
+
+    // Surrender management
+    Route::get('/surrenders', [SurrenderController::class, 'index'])->name('surrenders.index');
+    Route::patch('/surrenders/{surrender}/status', [SurrenderController::class, 'updateStatus'])->name('surrenders.updateStatus');
 });
 
 // -------------------------------------------------------
@@ -106,6 +129,18 @@ Route::middleware(['auth', 'role:admin,volunteer'])->group(function () {
     Route::get('/home-visits', [MeetGreetController::class, 'index'])->name('home-visits.index');
     Route::post('/home-visits', [MeetGreetController::class, 'store'])->name('home-visits.store');
     Route::patch('/home-visits/{meetGreet}/status', [MeetGreetController::class, 'updateStatus'])->name('home-visits.updateStatus');
+
+    // Post-adoption check-ins
+    Route::get('/checkins', [AdoptionCheckinController::class, 'index'])->name('checkins.index');
+    Route::patch('/checkins/{checkin}/complete', [AdoptionCheckinController::class, 'complete'])->name('checkins.complete');
+
+    // Pet diary entries
+    Route::post('/pets/{pet}/diary', [DiaryEntryController::class, 'store'])->name('diary.store');
+    Route::delete('/diary/{entry}', [DiaryEntryController::class, 'destroy'])->name('diary.destroy');
 });
+
+// Public surrender form (no auth required)
+Route::get('/surrender', [SurrenderController::class, 'create'])->name('surrenders.create');
+Route::post('/surrender', [SurrenderController::class, 'store'])->name('surrenders.store');
 
 require __DIR__ . '/auth.php';

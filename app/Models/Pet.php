@@ -55,4 +55,14 @@ class Pet extends Model
     {
         return $this->hasOne(PetImage::class)->where('is_primary', true);
     }
+
+    public function favourites(): HasMany
+    {
+        return $this->hasMany(PetFavourite::class);
+    }
+
+    public function diaryEntries(): HasMany
+    {
+        return $this->hasMany(DiaryEntry::class)->latest();
+    }
 }

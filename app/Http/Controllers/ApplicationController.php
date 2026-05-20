@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\AdoptionCheckin;
 use App\Models\Pet;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -132,9 +133,23 @@ class ApplicationController extends Controller
                     ->update(['status' => 'rejected']);
             }
 
-            // When completed — mark pet as adopted
+            // When completed — mark pet as adopted + schedule follow-up check-ins
             if ($request->status === 'completed') {
                 $application->pet->update(['status' => 'adopted']);
+
+                $today = now();
+                foreach ([
+                    ['1-week check-in',  $today->copy()->addWeek()],
+                    ['1-month check-in', $today->copy()->addMonth()],
+                    ['6-month check-in', $today->copy()->addMonths(6)],
+                ] as [$label, $due]) {
+                    AdoptionCheckin::create([
+                        'application_id' => $application->id,
+                        'label'          => $label,
+                        'due_at'         => $due->toDateString(),
+                        'status'         => 'pending',
+                    ]);
+                }
             }
         });
 

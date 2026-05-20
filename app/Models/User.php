@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasMany(MeetGreet::class, 'volunteer_id');
     }
 
+    public function favourites(): HasMany
+    {
+        return $this->hasMany(PetFavourite::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

@@ -26,7 +26,12 @@ class PetController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('pets.index', compact('pets'));
+        // Pass the authenticated adopter's saved pet IDs so cards can show the heart state
+        $savedPetIds = auth()->check() && auth()->user()->role === 'adopter'
+            ? auth()->user()->favourites()->pluck('pet_id')->flip()
+            : collect();
+
+        return view('pets.index', compact('pets', 'savedPetIds'));
     }
 
     public function show(Pet $pet): View
@@ -35,8 +40,13 @@ class PetController extends Controller
             'images',
             'primaryImage',
             'medicalRecords' => fn($q) => $q->latest('record_date'),
+            'diaryEntries.postedBy',
         ]);
-        return view('pets.show', compact('pet'));
+
+        $isSaved = auth()->check() && auth()->user()->role === 'adopter'
+            && \App\Models\PetFavourite::where('user_id', auth()->id())->where('pet_id', $pet->id)->exists();
+
+        return view('pets.show', compact('pet', 'isSaved'));
     }
 
     // Admin only — guarded in routes

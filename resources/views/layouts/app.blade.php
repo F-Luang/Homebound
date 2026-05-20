@@ -113,6 +113,18 @@
                         Home Visits
                     </a>
 
+                    <a href="{{ route('checkins.index') }}" class="sb-link {{ request()->routeIs('checkins.*') ? 'active' : '' }}"
+                        onclick="closeSidebarOnMobile()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 8h3l2 5 3-10 2 5h2"/>
+                        </svg>
+                        Check-ins
+                        @php $pendingCheckins = \App\Models\AdoptionCheckin::where('status','pending')->where('due_at','<=',now()->addDays(3))->count(); @endphp
+                        @if($pendingCheckins > 0)
+                            <span class="sb-notif-badge">{{ $pendingCheckins > 9 ? '9+' : $pendingCheckins }}</span>
+                        @endif
+                    </a>
+
                     <a href="{{ route('reports.index') }}" class="sb-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
                         onclick="closeSidebarOnMobile()">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -134,6 +146,19 @@
                         Notifications
                         @if($unreadCount > 0)
                             <span class="sb-notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('surrenders.index') }}"
+                        class="sb-link {{ request()->routeIs('surrenders.*') ? 'active' : '' }}"
+                        onclick="closeSidebarOnMobile()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 2v8M5 7l3 3 3-3"/><rect x="3" y="12" width="10" height="2" rx="1"/>
+                        </svg>
+                        Surrenders
+                        @php $pendingSurrenders = \App\Models\Surrender::where('status','pending')->count(); @endphp
+                        @if($pendingSurrenders > 0)
+                            <span class="sb-notif-badge">{{ $pendingSurrenders > 9 ? '9+' : $pendingSurrenders }}</span>
                         @endif
                     </a>
 
@@ -244,6 +269,14 @@
                             <path d="M8 5v6" />
                         </svg>
                         Smart Match
+                    </a>
+
+                    <a href="{{ route('favourites.index') }}" class="sb-link {{ request()->routeIs('favourites.*') ? 'active' : '' }}"
+                        onclick="closeSidebarOnMobile()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 13s-5-3.5-5-7a3 3 0 016 0 3 3 0 016 0c0 3.5-5 7-5 7z"/>
+                        </svg>
+                        Saved Pets
                     </a>
 
                     <a href="{{ route('applications.index') }}"
