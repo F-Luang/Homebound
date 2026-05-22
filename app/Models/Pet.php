@@ -12,6 +12,7 @@ class Pet extends Model
         'name',
         'species',
         'breed',
+        'gender',
         'age_months',
         'size',
         'activity_level',
@@ -27,7 +28,6 @@ class Pet extends Model
         'medications',
         'vet',
         'special_note',
-
     ];
 
     protected $casts = [

@@ -65,8 +65,17 @@ class ApplicationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'pet_id' => 'required|exists:pets,id',
-            'notes' => 'nullable|string|max:1000',
+            'pet_id'                  => 'required|exists:pets,id',
+            'home_type'               => 'required|in:apartment,house,condo,other',
+            'has_yard'                => 'boolean',
+            'has_other_pets'          => 'boolean',
+            'other_pets_description'  => 'nullable|string|max:255',
+            'has_children'            => 'boolean',
+            'children_ages'           => 'nullable|string|max:100',
+            'experience'              => 'required|in:first_time,some,experienced',
+            'hours_alone'             => 'nullable|integer|min:0|max:24',
+            'reason'                  => 'required|string|max:1000',
+            'notes'                   => 'nullable|string|max:1000',
         ]);
 
         // Prevent duplicate open applications — friendly redirect instead of crash
@@ -80,11 +89,20 @@ class ApplicationController extends Controller
         }
 
         $application = Application::create([
-            'user_id' => auth()->id(),
-            'pet_id' => $request->pet_id,
-            'notes' => $request->notes,
-            'status' => 'pending',
-            'submitted_at' => now(),
+            'user_id'                => auth()->id(),
+            'pet_id'                 => $request->pet_id,
+            'home_type'              => $request->home_type,
+            'has_yard'               => $request->boolean('has_yard'),
+            'has_other_pets'         => $request->boolean('has_other_pets'),
+            'other_pets_description' => $request->other_pets_description,
+            'has_children'           => $request->boolean('has_children'),
+            'children_ages'          => $request->children_ages,
+            'experience'             => $request->experience,
+            'hours_alone'            => $request->hours_alone,
+            'reason'                 => $request->reason,
+            'notes'                  => $request->notes,
+            'status'                 => 'pending',
+            'submitted_at'           => now(),
         ]);
 
         $application->load('pet');

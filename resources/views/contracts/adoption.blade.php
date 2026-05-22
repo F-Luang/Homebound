@@ -28,12 +28,6 @@
             padding-bottom: 16px;
         }
 
-        .org-name {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1D9E75;
-        }
-
         .org-tagline {
             font-size: 10px;
             color: #888;
@@ -249,7 +243,8 @@
     <table class="header-table">
         <tr>
             <td>
-                <div class="org-name">Homebound</div>
+                <img src="{{ 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/Homebound.png'))) }}"
+                     alt="Homebound" style="height: 48px; display: block;">
                 <div class="org-tagline">Pet Adoption Management System</div>
             </td>
             <td class="meta-right">
@@ -308,6 +303,10 @@
                         <td class="info-value">{{ $application->pet->breed ?? 'Mixed / Unknown' }}</td>
                     </tr>
                     <tr>
+                        <td class="info-label">Gender</td>
+                        <td class="info-value">{{ ucfirst($application->pet->gender ?? 'Unknown') }}</td>
+                    </tr>
+                    <tr>
                         <td class="info-label">Age</td>
                         <td class="info-value">{{ floor($application->pet->age_months / 12) }} yr
                             {{ $application->pet->age_months % 12 }} mo
@@ -328,11 +327,57 @@
         </tr>
     </table>
 
+    {{-- ===== ADOPTER PROFILE ===== --}}
+    @if($application->home_type || $application->experience)
+        <div class="section">
+            <div class="section-title">Adopter's profile</div>
+            <table class="info-table">
+                @if($application->home_type)
+                    <tr>
+                        <td class="info-label">Home type</td>
+                        <td class="info-value">{{ ucfirst($application->home_type) }}{{ $application->has_yard ? ', with yard' : '' }}</td>
+                    </tr>
+                @endif
+                @if($application->has_children)
+                    <tr>
+                        <td class="info-label">Children at home</td>
+                        <td class="info-value">Yes{{ $application->children_ages ? ' — ages ' . $application->children_ages : '' }}</td>
+                    </tr>
+                @endif
+                @if($application->has_other_pets)
+                    <tr>
+                        <td class="info-label">Other pets</td>
+                        <td class="info-value">{{ $application->other_pets_description ?? 'Yes' }}</td>
+                    </tr>
+                @endif
+                @if($application->experience)
+                    <tr>
+                        <td class="info-label">Ownership experience</td>
+                        <td class="info-value">{{ ['first_time' => 'First-time owner', 'some' => 'Some experience', 'experienced' => 'Experienced owner'][$application->experience] ?? ucfirst($application->experience) }}</td>
+                    </tr>
+                @endif
+                @if($application->hours_alone !== null)
+                    <tr>
+                        <td class="info-label">Hours alone per day</td>
+                        <td class="info-value">{{ $application->hours_alone }}h</td>
+                    </tr>
+                @endif
+            </table>
+        </div>
+    @endif
+
     {{-- ===== ADOPTER STATEMENT ===== --}}
-    @if($application->notes)
+    @if($application->reason || $application->notes)
         <div class="section">
             <div class="section-title">Adopter's statement</div>
-            <div class="statement-box">"{{ $application->notes }}"</div>
+            @if($application->reason)
+                <div class="statement-box">"{{ $application->reason }}"</div>
+            @endif
+            @if($application->notes)
+                <div style="font-size:10px;color:#666;margin-top:8px;line-height:1.6;">
+                    <strong>Additional notes:</strong> {{ $application->notes }}
+                </div>
+            @endif
         </div>
     @endif
 

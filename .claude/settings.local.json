@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Sort-Object Name)",
+      "Bash(Select-Object -Last 5)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}

@@ -15,12 +15,24 @@ class Application extends Model
         'user_id',
         'pet_id',
         'status',
+        'home_type',
+        'has_yard',
+        'has_other_pets',
+        'other_pets_description',
+        'has_children',
+        'children_ages',
+        'experience',
+        'hours_alone',
+        'reason',
         'notes',
         'submitted_at',
     ];
 
     protected $casts = [
-        'submitted_at' => 'datetime',
+        'submitted_at'   => 'datetime',
+        'has_yard'       => 'boolean',
+        'has_other_pets' => 'boolean',
+        'has_children'   => 'boolean',
     ];
 
     public function user(): BelongsTo

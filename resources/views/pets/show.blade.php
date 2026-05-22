@@ -139,14 +139,97 @@
                                                         <form method="POST" action="{{ route('applications.store') }}">
                                                             @csrf
                                                             <input type="hidden" name="pet_id" value="{{ $pet->id }}">
+
+                                                            {{-- Home situation --}}
+                                                            <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Home situation</div>
+
                                                             <div class="form-group">
-                                                                <label class="form-label">Notes (optional)</label>
-                                                                <textarea name="notes" class="form-input"
-                                                                    placeholder="Tell us about your home, lifestyle, experience with pets…">{{ old('notes') }}</textarea>
+                                                                <label class="form-label">Home type *</label>
+                                                                <select name="home_type" class="form-input" required>
+                                                                    <option value="" disabled {{ old('home_type') ? '' : 'selected' }}>Select…</option>
+                                                                    @foreach(['apartment' => 'Apartment', 'house' => 'House', 'condo' => 'Condo', 'other' => 'Other'] as $val => $lbl)
+                                                                        <option value="{{ $val }}" {{ old('home_type') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                @error('home_type') <div class="form-error">{{ $message }}</div> @enderror
+                                                            </div>
+
+                                                            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                                                                <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                                                    <input type="checkbox" name="has_yard" value="1" {{ old('has_yard') ? 'checked' : '' }}>
+                                                                    I have a yard or outdoor space
+                                                                </label>
+                                                                <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                                                    <input type="checkbox" name="has_children" value="1" id="has_children_check" {{ old('has_children') ? 'checked' : '' }}>
+                                                                    I have children at home
+                                                                </label>
+                                                                <div id="children_ages_field" style="{{ old('has_children') ? '' : 'display:none;' }}padding-left:24px;">
+                                                                    <input class="form-input" name="children_ages" placeholder="Ages, e.g. 3, 7, 12"
+                                                                        value="{{ old('children_ages') }}" style="margin-top:4px;">
+                                                                    @error('children_ages') <div class="form-error">{{ $message }}</div> @enderror
+                                                                </div>
+                                                                <label style="font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                                                                    <input type="checkbox" name="has_other_pets" value="1" id="has_other_pets_check" {{ old('has_other_pets') ? 'checked' : '' }}>
+                                                                    I already have other pets
+                                                                </label>
+                                                                <div id="other_pets_field" style="{{ old('has_other_pets') ? '' : 'display:none;' }}padding-left:24px;">
+                                                                    <input class="form-input" name="other_pets_description" placeholder="e.g. 1 adult dog, 2 cats"
+                                                                        value="{{ old('other_pets_description') }}" style="margin-top:4px;">
+                                                                    @error('other_pets_description') <div class="form-error">{{ $message }}</div> @enderror
+                                                                </div>
+                                                            </div>
+
+                                                            {{-- Experience & time --}}
+                                                            <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Experience & availability</div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label">Pet ownership experience *</label>
+                                                                <select name="experience" class="form-input" required>
+                                                                    <option value="" disabled {{ old('experience') ? '' : 'selected' }}>Select…</option>
+                                                                    <option value="first_time" {{ old('experience') === 'first_time' ? 'selected' : '' }}>First-time owner</option>
+                                                                    <option value="some" {{ old('experience') === 'some' ? 'selected' : '' }}>Some experience</option>
+                                                                    <option value="experienced" {{ old('experience') === 'experienced' ? 'selected' : '' }}>Experienced owner</option>
+                                                                </select>
+                                                                @error('experience') <div class="form-error">{{ $message }}</div> @enderror
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label">Hours the pet would be alone per day</label>
+                                                                <input class="form-input" type="number" name="hours_alone" min="0" max="24"
+                                                                    value="{{ old('hours_alone') }}" placeholder="e.g. 4">
+                                                                @error('hours_alone') <div class="form-error">{{ $message }}</div> @enderror
+                                                            </div>
+
+                                                            {{-- Reason & notes --}}
+                                                            <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Your application</div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label">Why do you want to adopt {{ $pet->name }}? *</label>
+                                                                <textarea name="reason" class="form-input" rows="3" required
+                                                                    placeholder="Tell us what draws you to this pet and how you plan to care for them…">{{ old('reason') }}</textarea>
+                                                                @error('reason') <div class="form-error">{{ $message }}</div> @enderror
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label class="form-label">Anything else to add? <span style="color:#aaa;">(optional)</span></label>
+                                                                <textarea name="notes" class="form-input" rows="2"
+                                                                    placeholder="Any questions, special circumstances, or additional context…">{{ old('notes') }}</textarea>
                                                                 @error('notes') <div class="form-error">{{ $message }}</div> @enderror
                                                             </div>
+
+                                                            @error('application') <div class="form-error" style="margin-bottom:10px;">{{ $message }}</div> @enderror
+
                                                             <button type="submit" class="btn btn-primary" style="width:100%;">Submit application</button>
                                                         </form>
+
+                                                        <script>
+                                                            document.getElementById('has_children_check').addEventListener('change', function () {
+                                                                document.getElementById('children_ages_field').style.display = this.checked ? 'block' : 'none';
+                                                            });
+                                                            document.getElementById('has_other_pets_check').addEventListener('change', function () {
+                                                                document.getElementById('other_pets_field').style.display = this.checked ? 'block' : 'none';
+                                                            });
+                                                        </script>
 
                                                         {{-- Save / unsave --}}
                                                         <div style="margin-top:10px;">

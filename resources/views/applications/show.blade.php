@@ -59,7 +59,7 @@
                 {{-- Applicant info --}}
                 <div class="card" style="margin-bottom:16px;">
                     <div style="font-size:13px;font-weight:500;margin-bottom:14px;">Applicant information</div>
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
                         <div style="width:44px;height:44px;border-radius:50%;background:#E1F5EE;color:#0F6E56;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0;">
                             {{ strtoupper(substr($application->user->name ?? 'U', 0, 1)) }}
                         </div>
@@ -68,13 +68,73 @@
                             <div style="font-size:12px;color:#888;">{{ $application->user->email ?? '' }}</div>
                         </div>
                     </div>
+
+                    {{-- Home situation --}}
+                    @if($application->home_type)
+                        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Home situation</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Home type</div>
+                                <div style="font-size:13px;font-weight:500;">{{ ucfirst($application->home_type) }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Has yard</div>
+                                <div style="font-size:13px;font-weight:500;">{{ $application->has_yard ? 'Yes' : 'No' }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Children at home</div>
+                                <div style="font-size:13px;font-weight:500;">
+                                    {{ $application->has_children ? 'Yes' : 'No' }}
+                                    @if($application->has_children && $application->children_ages)
+                                        <span style="color:#888;font-weight:400;"> — ages {{ $application->children_ages }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Other pets</div>
+                                <div style="font-size:13px;font-weight:500;">
+                                    {{ $application->has_other_pets ? 'Yes' : 'No' }}
+                                    @if($application->has_other_pets && $application->other_pets_description)
+                                        <span style="color:#888;font-weight:400;"> — {{ $application->other_pets_description }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Experience & availability --}}
+                    @if($application->experience)
+                        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Experience & availability</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Experience level</div>
+                                <div style="font-size:13px;font-weight:500;">
+                                    {{ ['first_time' => 'First-time owner', 'some' => 'Some experience', 'experienced' => 'Experienced owner'][$application->experience] ?? ucfirst($application->experience) }}
+                                </div>
+                            </div>
+                            @if($application->hours_alone !== null)
+                                <div>
+                                    <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Hours alone/day</div>
+                                    <div style="font-size:13px;font-weight:500;">{{ $application->hours_alone }}h</div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- Reason --}}
+                    @if($application->reason)
+                        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Reason for adopting</div>
+                        <div style="font-size:13px;color:#444;line-height:1.7;background:#F5F4F0;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+                            {{ $application->reason }}
+                        </div>
+                    @endif
+
+                    {{-- Additional notes --}}
                     @if($application->notes)
-                        <div style="font-size:12px;font-weight:500;color:#888;margin-bottom:6px;">Application notes</div>
+                        <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Additional notes</div>
                         <div style="font-size:13px;color:#444;line-height:1.7;background:#F5F4F0;border-radius:8px;padding:12px 14px;">
                             {{ $application->notes }}
                         </div>
-                    @else
-                        <div class="text-muted">No notes provided.</div>
                     @endif
                 </div>
 
