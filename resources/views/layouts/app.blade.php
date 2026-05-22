@@ -641,6 +641,62 @@
             window.addEventListener('pageshow', finishProgress);
         })();
     </script>
+
+    <script>
+        // Preserve scroll position across standard form submits (diary, cancel, etc.)
+        (function () {
+            const KEY = 'hb_scroll_y';
+
+            const saved = sessionStorage.getItem(KEY);
+            if (saved !== null) {
+                window.scrollTo(0, parseInt(saved, 10));
+                sessionStorage.removeItem(KEY);
+            }
+
+            document.addEventListener('submit', function (e) {
+                if (!e.target.closest('.fav-form')) {
+                    sessionStorage.setItem(KEY, window.scrollY);
+                }
+            });
+        })();
+
+        // AJAX favourite toggle — no page reload
+        document.addEventListener('submit', function (e) {
+            const form = e.target.closest('.fav-form');
+            if (!form) return;
+            e.preventDefault();
+
+            const btn   = form.querySelector('button');
+            const saved = form.dataset.saved === 'true';
+            const url   = saved ? form.dataset.destroy : form.dataset.store;
+
+            btn.disabled = true;
+
+            fetch(url, {
+                method : saved ? 'DELETE' : 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept'      : 'application/json',
+                },
+            })
+            .then(function (res) { return res.ok ? res.json() : Promise.reject(); })
+            .then(function (data) {
+                const nowSaved = data.saved;
+                form.dataset.saved = nowSaved ? 'true' : 'false';
+                btn.textContent    = nowSaved ? '❤️' : '🤍';
+                btn.title          = nowSaved ? 'Remove from saved' : 'Save pet';
+
+                // On the favourites page, slide the card out
+                const card = form.closest('[data-fav-card]');
+                if (card) {
+                    card.style.transition = 'opacity 0.2s';
+                    card.style.opacity    = '0';
+                    setTimeout(function () { card.remove(); }, 220);
+                }
+            })
+            .finally(function () { btn.disabled = false; });
+        });
+    </script>
 </body>
 
 </html>

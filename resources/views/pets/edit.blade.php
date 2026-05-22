@@ -52,10 +52,29 @@
                             placeholder="e.g. Labrador Retriever">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Gender *</label>
+                        <select class="form-input" name="gender" required>
+                            @foreach(['male' => 'Male', 'female' => 'Female', 'unknown' => 'Unknown'] as $val => $label)
+                                <option value="{{ $val }}" {{ old('gender', $pet->gender ?? 'unknown') === $val ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('gender') <div class="form-error">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
                         <label class="form-label">Age (months) *</label>
                         <input class="form-input" type="number" name="age_months" min="0"
                             value="{{ old('age_months', $pet->age_months ?? '') }}" required>
                         @error('age_months') <div class="form-error">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input class="form-input" type="number" step="0.01" min="0.01" name="weight_kg"
+                            value="{{ old('weight_kg', $pet->weight_kg ?? '') }}" placeholder="e.g. 0.08 for a small bird">
                     </div>
                 </div>
 
@@ -71,14 +90,6 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Weight (kg)</label>
-                        <input class="form-input" type="number" step="0.01" min="0.01" name="weight_kg"
-                            value="{{ old('weight_kg', $pet->weight_kg ?? '') }}" placeholder="e.g. 0.08 for a small bird">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
                         <label class="form-label">Activity level *</label>
                         <select class="form-input" name="activity_level" required>
                             @foreach(['low', 'moderate', 'high'] as $a)
@@ -88,13 +99,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Special note</label>
-                        <input class="form-input" name="special_note"
-                            value="{{ old('special_note', $pet->special_note ?? '') }}"
-                            placeholder="e.g. Needs daily walk (30 min), Indoor only">
-                        <div style="font-size:11px;color:#888;margin-top:3px;">Shown as a badge on the pet's profile.</div>
-                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Special note</label>
+                    <input class="form-input" name="special_note"
+                        value="{{ old('special_note', $pet->special_note ?? '') }}"
+                        placeholder="e.g. Needs daily walk (30 min), Indoor only">
+                    <div style="font-size:11px;color:#888;margin-top:3px;">Shown as a badge on the pet's profile.</div>
                 </div>
 
                 <div class="form-group">

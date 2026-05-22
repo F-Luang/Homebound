@@ -24,10 +24,14 @@
                     $imgUrl  = $primary ? (str_starts_with($primary->path,'http') ? $primary->path : asset('storage/'.$primary->path)) : null;
                     $emojis  = ['dog'=>'🐕','cat'=>'🐈','rabbit'=>'🐇','bird'=>'🐦','hamster'=>'🐹','other'=>'🐾'];
                 @endphp
-                <div class="card" style="padding:0;overflow:hidden;position:relative;">
+                <div class="card" style="padding:0;overflow:hidden;position:relative;" data-fav-card>
                     {{-- Remove heart --}}
-                    <form method="POST" action="{{ route('favourites.destroy', $pet) }}" style="position:absolute;top:10px;right:10px;z-index:2;">
-                        @csrf @method('DELETE')
+                    <form class="fav-form"
+                        data-saved="true"
+                        data-store="{{ route('favourites.store', $pet) }}"
+                        data-destroy="{{ route('favourites.destroy', $pet) }}"
+                        style="position:absolute;top:10px;right:10px;z-index:2;">
+                        @csrf
                         <button type="submit" title="Remove from saved"
                             style="background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.15);">
                             ❤️

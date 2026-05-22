@@ -82,11 +82,12 @@
                                 @auth
                                     @if(auth()->user()->role === 'adopter')
                                         @php $saved = isset($savedPetIds) && $savedPetIds->has($pet->id); @endphp
-                                        <form method="POST"
-                                            action="{{ $saved ? route('favourites.destroy', $pet) : route('favourites.store', $pet) }}"
+                                        <form class="fav-form"
+                                            data-saved="{{ $saved ? 'true' : 'false' }}"
+                                            data-store="{{ route('favourites.store', $pet) }}"
+                                            data-destroy="{{ route('favourites.destroy', $pet) }}"
                                             style="position:absolute;top:10px;right:10px;z-index:3;">
                                             @csrf
-                                            @if($saved) @method('DELETE') @endif
                                             <button type="submit" title="{{ $saved ? 'Remove from saved' : 'Save pet' }}"
                                                 style="background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.18);">
                                                 {{ $saved ? '❤️' : '🤍' }}
@@ -134,8 +135,9 @@
                                                 {{ $pet->name }}
                                             </div>
                                             <div style="font-size:12px;color:#888;margin-bottom:10px;">
-                                                {{ $pet->breed ?? ucfirst($pet->species) }} · {{ floor($pet->age_months / 12) }}y ·
-                                                {{ ucfirst($pet->size) }}
+                                                {{ $pet->breed ?? ucfirst($pet->species) }} · {{ floor($pet->age_months / 12) }}y
+                                                @if(($pet->gender ?? 'unknown') !== 'unknown') · {{ ucfirst($pet->gender) }} @endif
+                                                · {{ ucfirst($pet->size) }}
                                             </div>
                                             <div class="flex" style="flex-wrap:wrap;gap:4px;">
                                                 <span class="tag tag-teal">{{ ucfirst($pet->activity_level) }}</span>
