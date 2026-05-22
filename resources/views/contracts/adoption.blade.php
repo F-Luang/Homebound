@@ -23,15 +23,21 @@
         /* ===== HEADER ===== */
         .header-table {
             width: 100%;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             border-bottom: 2.5px solid #1D9E75;
-            padding-bottom: 16px;
+            padding-bottom: 14px;
         }
 
         .org-tagline {
             font-size: 10px;
             color: #888;
             margin-top: 2px;
+        }
+
+        .org-contact {
+            font-size: 9.5px;
+            color: #aaa;
+            margin-top: 3px;
         }
 
         .meta-right {
@@ -55,19 +61,19 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .contract-subtitle {
             text-align: center;
             font-size: 10px;
             color: #666;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         /* ===== SECTION ===== */
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .section-title {
@@ -88,14 +94,14 @@
         }
 
         .info-table td {
-            padding: 4px 0;
+            padding: 3.5px 0;
             vertical-align: top;
             font-size: 11px;
         }
 
         .info-label {
             color: #888;
-            width: 130px;
+            width: 140px;
         }
 
         .info-value {
@@ -107,7 +113,7 @@
         .two-col-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .two-col-table td {
@@ -133,8 +139,8 @@
             vertical-align: top;
             border-bottom: 0.5px solid #f5f5f5;
             font-size: 10.5px;
-            color: #444;
-            line-height: 1.5;
+            color: #333;
+            line-height: 1.55;
         }
 
         .term-num {
@@ -156,6 +162,17 @@
             border-radius: 0 4px 4px 0;
         }
 
+        /* ===== ACKNOWLEDGMENT BOX ===== */
+        .ack-box {
+            border: 0.5px solid #d0ede4;
+            border-radius: 6px;
+            padding: 12px 14px;
+            background: #f9fdf9;
+            font-size: 10.5px;
+            color: #333;
+            line-height: 1.6;
+        }
+
         /* ===== BADGE ===== */
         .badge {
             background: #E1F5EE;
@@ -172,24 +189,46 @@
         .sig-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 28px;
+            margin-top: 24px;
         }
 
         .sig-table td {
             width: 50%;
             vertical-align: bottom;
-            padding-right: 32px;
+            padding-right: 36px;
         }
 
         .sig-table td:last-child {
             padding-right: 0;
-            padding-left: 16px;
+            padding-left: 20px;
         }
 
         .sig-line {
             border-bottom: 1px solid #1a1a18;
             height: 44px;
+            margin-bottom: 5px;
+        }
+
+        .sig-meta {
+            display: table;
+            width: 100%;
             margin-bottom: 6px;
+        }
+
+        .sig-meta-label {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: table-cell;
+            width: 50%;
+        }
+
+        .sig-date-line {
+            border-bottom: 0.5px solid #aaa;
+            display: inline-block;
+            width: 100px;
+            margin-left: 4px;
         }
 
         .sig-role {
@@ -202,13 +241,19 @@
         .sig-name {
             font-size: 11px;
             font-weight: 600;
-            margin-top: 3px;
+            margin-top: 2px;
+        }
+
+        .sig-printed {
+            font-size: 9.5px;
+            color: #888;
+            margin-top: 2px;
         }
 
         /* ===== FOOTER ===== */
         .footer {
-            margin-top: 32px;
-            padding-top: 12px;
+            margin-top: 28px;
+            padding-top: 10px;
             border-top: 0.5px solid #ddd;
             text-align: center;
             font-size: 9px;
@@ -228,7 +273,6 @@
             z-index: -1;
         }
 
-        /* ===== PAGE BREAK ===== */
         .page-break {
             page-break-after: always;
         }
@@ -244,8 +288,9 @@
         <tr>
             <td>
                 <img src="{{ 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/Homebound.png'))) }}"
-                     alt="Homebound" style="height: 48px; display: block;">
+                     alt="Homebound" style="height:48px;display:block;">
                 <div class="org-tagline">Pet Adoption Management System</div>
+                <div class="org-contact">homebound.shelter@email.com &nbsp;·&nbsp; Davao City, Philippines</div>
             </td>
             <td class="meta-right">
                 <span class="contract-label">Adoption Contract</span>
@@ -259,8 +304,9 @@
     {{-- ===== TITLE ===== --}}
     <div class="contract-title">Pet Adoption Agreement</div>
     <div class="contract-subtitle">
-        This agreement was entered into on {{ $application->submitted_at->format('F j, Y') }}
-        between Homebound Pet Adoption Shelter and the adopter named below.
+        This agreement is entered into on <strong>{{ $application->updated_at->format('F j, Y') }}</strong>
+        by and between <strong>Homebound Pet Adoption Shelter</strong> (hereinafter "the Shelter")
+        and the adopter identified below (hereinafter "the Adopter").
     </div>
 
     {{-- ===== PARTIES ===== --}}
@@ -277,6 +323,18 @@
                         <td class="info-label">Email address</td>
                         <td class="info-value">{{ $application->user->email }}</td>
                     </tr>
+                    @if(!empty($application->user->phone))
+                        <tr>
+                            <td class="info-label">Phone number</td>
+                            <td class="info-value">{{ $application->user->phone }}</td>
+                        </tr>
+                    @endif
+                    <tr>
+                        <td class="info-label">Home type</td>
+                        <td class="info-value">
+                            {{ $application->home_type ? ucfirst($application->home_type) . ($application->has_yard ? ', with yard' : '') : '—' }}
+                        </td>
+                    </tr>
                     <tr>
                         <td class="info-label">Application date</td>
                         <td class="info-value">{{ $application->submitted_at->format('M j, Y') }}</td>
@@ -288,7 +346,7 @@
                 </table>
             </td>
             <td>
-                <div class="section-title">Pet information</div>
+                <div class="section-title">Animal information</div>
                 <table class="info-table">
                     <tr>
                         <td class="info-label">Name</td>
@@ -307,59 +365,47 @@
                         <td class="info-value">{{ ucfirst($application->pet->gender ?? 'Unknown') }}</td>
                     </tr>
                     <tr>
-                        <td class="info-label">Age</td>
-                        <td class="info-value">{{ floor($application->pet->age_months / 12) }} yr
+                        <td class="info-label">Age at adoption</td>
+                        <td class="info-value">
+                            {{ floor($application->pet->age_months / 12) }} yr
                             {{ $application->pet->age_months % 12 }} mo
                         </td>
                     </tr>
                     <tr>
-                        <td class="info-label">Size</td>
-                        <td class="info-value">{{ ucfirst($application->pet->size) }}</td>
+                        <td class="info-label">Size / Weight</td>
+                        <td class="info-value">
+                            {{ ucfirst($application->pet->size) }}
+                            @if($application->pet->weight_kg) / {{ $application->pet->weight_kg }} kg @endif
+                        </td>
                     </tr>
-                    @if($application->pet->weight_kg)
-                        <tr>
-                            <td class="info-label">Weight</td>
-                            <td class="info-value">{{ $application->pet->weight_kg }} kg</td>
-                        </tr>
-                    @endif
+                    <tr>
+                        <td class="info-label">Shelter ID</td>
+                        <td class="info-value">HB-PET-{{ str_pad($application->pet->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    </tr>
                 </table>
             </td>
         </tr>
     </table>
 
-    {{-- ===== ADOPTER PROFILE ===== --}}
-    @if($application->home_type || $application->experience)
+    {{-- ===== MEET & GREET ===== --}}
+    @if($application->meetGreet)
         <div class="section">
-            <div class="section-title">Adopter's profile</div>
+            <div class="section-title">Meet &amp; greet record</div>
             <table class="info-table">
-                @if($application->home_type)
+                <tr>
+                    <td class="info-label">Date conducted</td>
+                    <td class="info-value">{{ $application->meetGreet->scheduled_at->format('F j, Y — g:i A') }}</td>
+                </tr>
+                @if($application->meetGreet->volunteer)
                     <tr>
-                        <td class="info-label">Home type</td>
-                        <td class="info-value">{{ ucfirst($application->home_type) }}{{ $application->has_yard ? ', with yard' : '' }}</td>
+                        <td class="info-label">Facilitated by</td>
+                        <td class="info-value">{{ $application->meetGreet->volunteer->name }}</td>
                     </tr>
                 @endif
-                @if($application->has_children)
+                @if($application->meetGreet->notes)
                     <tr>
-                        <td class="info-label">Children at home</td>
-                        <td class="info-value">Yes{{ $application->children_ages ? ' — ages ' . $application->children_ages : '' }}</td>
-                    </tr>
-                @endif
-                @if($application->has_other_pets)
-                    <tr>
-                        <td class="info-label">Other pets</td>
-                        <td class="info-value">{{ $application->other_pets_description ?? 'Yes' }}</td>
-                    </tr>
-                @endif
-                @if($application->experience)
-                    <tr>
-                        <td class="info-label">Ownership experience</td>
-                        <td class="info-value">{{ ['first_time' => 'First-time owner', 'some' => 'Some experience', 'experienced' => 'Experienced owner'][$application->experience] ?? ucfirst($application->experience) }}</td>
-                    </tr>
-                @endif
-                @if($application->hours_alone !== null)
-                    <tr>
-                        <td class="info-label">Hours alone per day</td>
-                        <td class="info-value">{{ $application->hours_alone }}h</td>
+                        <td class="info-label">Observations</td>
+                        <td class="info-value">{{ $application->meetGreet->notes }}</td>
                     </tr>
                 @endif
             </table>
@@ -369,7 +415,7 @@
     {{-- ===== ADOPTER STATEMENT ===== --}}
     @if($application->reason || $application->notes)
         <div class="section">
-            <div class="section-title">Adopter's statement</div>
+            <div class="section-title">Adopter's declaration</div>
             @if($application->reason)
                 <div class="statement-box">"{{ $application->reason }}"</div>
             @endif
@@ -381,103 +427,153 @@
         </div>
     @endif
 
-    {{-- ===== MEET & GREET ===== --}}
-    @if($application->meetGreet)
-        <div class="section">
-            <div class="section-title">Meet & greet record</div>
-            <table class="info-table">
-                <tr>
-                    <td class="info-label">Date conducted</td>
-                    <td class="info-value">{{ $application->meetGreet->scheduled_at->format('F j, Y · g:i A') }}</td>
-                </tr>
-                @if($application->meetGreet->volunteer)
-                    <tr>
-                        <td class="info-label">Facilitated by</td>
-                        <td class="info-value">{{ $application->meetGreet->volunteer->name }}</td>
-                    </tr>
-                @endif
-                @if($application->meetGreet->notes)
-                    <tr>
-                        <td class="info-label">Notes</td>
-                        <td class="info-value">{{ $application->meetGreet->notes }}</td>
-                    </tr>
-                @endif
-            </table>
-        </div>
-    @endif
-
-    {{-- ===== TERMS ===== --}}
+    {{-- ===== TERMS AND CONDITIONS ===== --}}
     <div class="section">
-        <div class="section-title">Terms and conditions</div>
+        <div class="section-title">Terms and conditions of adoption</div>
         <table class="terms-table">
             <tr>
                 <td class="term-num">1.</td>
-                <td>The adopter agrees to provide <strong>{{ $application->pet->name }}</strong> with adequate food,
-                    clean water, shelter, and veterinary care for the duration of the animal's life.</td>
+                <td><strong>Care and welfare.</strong> The Adopter agrees to provide
+                    <strong>{{ $application->pet->name }}</strong> with adequate food, clean water, safe shelter,
+                    regular exercise, and prompt veterinary attention for the duration of the animal's life.</td>
             </tr>
             <tr>
                 <td class="term-num">2.</td>
-                <td><strong>{{ $application->pet->name }}</strong> shall be kept as a companion animal and shall not be
-                    used for breeding, fighting, experimentation, or any commercial purpose.</td>
+                <td><strong>Prohibited uses.</strong> <strong>{{ $application->pet->name }}</strong> shall be kept
+                    solely as a companion animal and shall not be used for breeding, dog/cockfighting,
+                    animal experimentation, resale, trade, or any commercial purpose whatsoever.</td>
             </tr>
             <tr>
                 <td class="term-num">3.</td>
-                <td>The adopter agrees to keep <strong>{{ $application->pet->name }}</strong> safely confined and not
-                    allow the animal to roam freely without adequate supervision.</td>
+                <td><strong>No transfer without consent.</strong> The Adopter shall not give away, sell, transfer,
+                    barter, or otherwise dispose of <strong>{{ $application->pet->name }}</strong> to any other party
+                    without the written consent of the Shelter. If the Adopter can no longer care for the animal, the
+                    Shelter must be contacted first and given the opportunity to reclaim the animal.</td>
             </tr>
             <tr>
                 <td class="term-num">4.</td>
-                <td>If the adopter is unable to continue caring for <strong>{{ $application->pet->name }}</strong> for
-                    any reason, the adopter agrees to contact Homebound Shelter before rehoming the animal to any other
-                    party.</td>
+                <td><strong>Spay / neuter.</strong> If <strong>{{ $application->pet->name }}</strong> has not yet been
+                    spayed or neutered at the time of adoption, the Adopter agrees to have the procedure performed
+                    by a licensed veterinarian within a reasonable period and to provide proof to the Shelter upon
+                    request.</td>
             </tr>
             <tr>
                 <td class="term-num">5.</td>
-                <td>Homebound Shelter reserves the right to reclaim <strong>{{ $application->pet->name }}</strong> if
-                    credible evidence of abuse, neglect, or violation of this agreement is presented.</td>
+                <td><strong>Confinement and safety.</strong> The Adopter agrees to keep
+                    <strong>{{ $application->pet->name }}</strong> safely confined at all times and to prevent the
+                    animal from roaming freely without adequate supervision, in compliance with local ordinances.</td>
             </tr>
             <tr>
                 <td class="term-num">6.</td>
-                <td>The adopter acknowledges receiving <strong>{{ $application->pet->name }}</strong> in good health and
-                    confirms having been informed of any known medical conditions or special care requirements.</td>
+                <td><strong>Veterinary care.</strong> The Adopter agrees to provide
+                    <strong>{{ $application->pet->name }}</strong> with regular veterinary check-ups, complete and
+                    up-to-date vaccinations, and any necessary medical treatments as recommended by a licensed
+                    veterinarian.</td>
             </tr>
             <tr>
                 <td class="term-num">7.</td>
-                <td>The adopter agrees to provide <strong>{{ $application->pet->name }}</strong> with regular veterinary
-                    check-ups and keep all vaccinations and treatments up to date.</td>
+                <td><strong>Shelter follow-up.</strong> The Adopter agrees to cooperate with post-adoption follow-up
+                    visits or check-ins conducted by the Shelter or its authorized representatives to verify the
+                    animal's welfare.</td>
             </tr>
             <tr>
                 <td class="term-num">8.</td>
-                <td>This agreement is legally binding upon signing and constitutes the complete understanding between
-                    both parties regarding the adoption of <strong>{{ $application->pet->name }}</strong>.</td>
+                <td><strong>Right of reclaim.</strong> Homebound Shelter reserves the right to reclaim
+                    <strong>{{ $application->pet->name }}</strong> without prior notice if credible evidence of abuse,
+                    neglect, mistreatment, or any violation of the terms of this agreement is presented. The Adopter
+                    waives the right to demand compensation in such cases.</td>
+            </tr>
+            <tr>
+                <td class="term-num">9.</td>
+                <td><strong>Acknowledgment of condition.</strong> The Adopter confirms having received
+                    <strong>{{ $application->pet->name }}</strong> in good health and having been fully informed of
+                    any known medical conditions, behavioral traits, and special care requirements prior to
+                    adoption.</td>
+            </tr>
+            <tr>
+                <td class="term-num">10.</td>
+                <td><strong>Indemnification.</strong> The Shelter shall not be held liable for any injury, property
+                    damage, illness, or death caused by <strong>{{ $application->pet->name }}</strong> after the date
+                    of handover. The Adopter assumes full legal and financial responsibility for the animal from the
+                    date of this agreement.</td>
+            </tr>
+            <tr>
+                <td class="term-num">11.</td>
+                <td><strong>Governing law.</strong> This agreement shall be governed by the laws of the Republic of
+                    the Philippines, including Republic Act No. 8485 (Animal Welfare Act of 1998) and its amendments.
+                    Any dispute arising from this agreement shall be settled amicably; failing which, it shall be
+                    subject to the jurisdiction of the appropriate courts.</td>
             </tr>
         </table>
     </div>
 
+    {{-- ===== HANDOVER ACKNOWLEDGMENT ===== --}}
+    <div class="section">
+        <div class="section-title">Handover acknowledgment</div>
+        <div class="ack-box">
+            I, <strong>{{ $application->user->name }}</strong>, hereby confirm that I have received
+            <strong>{{ $application->pet->name }}</strong> ({{ ucfirst($application->pet->species) }},
+            {{ $application->pet->breed ?? 'Mixed' }}, {{ ucfirst($application->pet->gender ?? 'Unknown') }})
+            from Homebound Pet Adoption Shelter on <strong>{{ $application->updated_at->format('F j, Y') }}</strong>.
+            I have read, understood, and voluntarily agreed to all the terms and conditions set forth in this
+            Adoption Agreement. I understand that this document is legally binding upon my signature.
+        </div>
+    </div>
+
     {{-- ===== SIGNATURES ===== --}}
-    <table class="sig-table">
-        <tr>
-            <td>
-                <div class="sig-line"></div>
-                <div class="sig-role">Adopter signature & date</div>
-                <div class="sig-name">{{ $application->user->name }}</div>
-            </td>
-            <td>
-                <div class="sig-line"></div>
-                <div class="sig-role">Shelter representative signature & date</div>
-                <div class="sig-name">Homebound Pet Adoption Shelter</div>
-            </td>
-        </tr>
-    </table>
+    <div class="section">
+        <div class="section-title">Signatures</div>
+        <table class="sig-table">
+            <tr>
+                <td>
+                    <div class="sig-line"></div>
+                    <div class="sig-role">Adopter signature</div>
+                    <div class="sig-name">{{ $application->user->name }}</div>
+                    <div class="sig-printed">
+                        Printed name: ________________________________
+                    </div>
+                    <div class="sig-printed" style="margin-top:4px;">
+                        Date: ________________________________
+                    </div>
+                </td>
+                <td>
+                    <div class="sig-line"></div>
+                    <div class="sig-role">Shelter representative signature</div>
+                    <div class="sig-name">Homebound Pet Adoption Shelter</div>
+                    <div class="sig-printed">
+                        Printed name &amp; designation: ________________________________
+                    </div>
+                    <div class="sig-printed" style="margin-top:4px;">
+                        Date: ________________________________
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Witness --}}
+        <table style="width:50%;border-collapse:collapse;margin-top:20px;">
+            <tr>
+                <td style="vertical-align:bottom;padding-right:36px;">
+                    <div class="sig-line"></div>
+                    <div class="sig-role">Witness signature</div>
+                    <div class="sig-printed">
+                        Printed name: ________________________________
+                    </div>
+                    <div class="sig-printed" style="margin-top:4px;">
+                        Date: ________________________________
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
     {{-- ===== FOOTER ===== --}}
     <div class="footer">
         Homebound Pet Adoption Management System &nbsp;·&nbsp;
         Contract #HB-{{ str_pad($application->id, 5, '0', STR_PAD_LEFT) }} &nbsp;·&nbsp;
-        Generated on {{ now()->format('F j, Y') }} &nbsp;·&nbsp;
-        This document is computer-generated and valid without a physical stamp.
+        Generated {{ now()->format('F j, Y \a\t g:i A') }} &nbsp;·&nbsp;
+        This document is computer-generated. Signatures render it legally binding.
     </div>
 
 </body>
-
 </html>
