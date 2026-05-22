@@ -303,6 +303,17 @@
                             <span class="sb-notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                         @endif
                     </a>
+
+                    <a href="{{ route('surrenders.create') }}"
+                        class="sb-link {{ request()->routeIs('surrenders.create') ? 'active' : '' }}"
+                        onclick="closeSidebarOnMobile()">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M8 2v8M5 7l3 3 3-3" />
+                            <path d="M3 13h10" />
+                        </svg>
+                        Surrender a Pet
+                    </a>
                 @endif
             </nav>
 

@@ -65,7 +65,12 @@
                         </div>
                         <div>
                             <div style="font-size:14px;font-weight:500;">{{ $application->user->name ?? 'Unknown' }}</div>
-                            <div style="font-size:12px;color:#888;">{{ $application->user->email ?? '' }}</div>
+                            <div style="font-size:12px;color:#888;">
+                                {{ $application->user->email ?? '' }}
+                                @if($application->user->phone)
+                                    <span style="color:#ccc;margin:0 4px;">•</span>{{ $application->user->phone }}
+                                @endif
+                            </div>
                         </div>
                     </div>
 
