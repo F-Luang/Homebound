@@ -130,16 +130,34 @@ class ApplicationController extends Controller
 
         $allowed = $transitions[$application->status] ?? [];
 
-        $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', $allowed)],
-            'notes'  => 'nullable|string',
-        ]);
+        $rules = [
+            'status'            => ['required', 'string', 'in:' . implode(',', $allowed)],
+            'notes'             => 'nullable|string',
+            'fee_paid'          => 'nullable|numeric|min:0',
+            'payment_method'    => 'nullable|string|max:50',
+            'payment_reference' => 'nullable|string|max:100',
+        ];
+
+        // Require payment fields when completing
+        if ($request->status === 'completed') {
+            $rules['payment_method'] = 'required|string|max:50';
+        }
+
+        $request->validate($rules);
 
         DB::transaction(function () use ($request, $application) {
-            $application->update([
+            $fields = [
                 'status' => $request->status,
                 'notes'  => $request->notes ?? $application->notes,
-            ]);
+            ];
+
+            if ($request->status === 'completed') {
+                $fields['fee_paid']          = $request->fee_paid;
+                $fields['payment_method']    = $request->payment_method;
+                $fields['payment_reference'] = $request->payment_reference;
+            }
+
+            $application->update($fields);
 
             // When approved — lock pet and reject all competing open applications
             if ($request->status === 'approved') {

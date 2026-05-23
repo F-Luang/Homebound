@@ -20,6 +20,7 @@ class Pet extends Model
         'hypoallergenic',
         'is_senior',
         'status',
+        'adoption_fee',
         'bio',
         'weight_kg',
         'food',

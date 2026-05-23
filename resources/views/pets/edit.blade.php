@@ -174,6 +174,22 @@
 
             {{-- ===== STATUS (edit only) ===== --}}
             @isset($pet)
+                {{-- ===== ADOPTION FEE ===== --}}
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">
+                        Adoption fee
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Fee amount (₱)</label>
+                        <input class="form-input" type="number" step="0.01" min="0" name="adoption_fee"
+                            value="{{ old('adoption_fee', $pet->adoption_fee ?? '') }}"
+                            placeholder="e.g. 500 — leave blank if free" style="max-width:200px;">
+                        <div style="font-size:11px;color:#888;margin-top:4px;">
+                            Leave blank or set to 0 for sponsored / free adoptions.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card" style="margin-bottom:16px;">
                     <div
                         style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">

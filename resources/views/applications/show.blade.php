@@ -180,9 +180,11 @@
                 @if(auth()->user()->isAdmin() && !in_array($application->status, ['rejected','completed']))
                     <div class="card">
                         <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Advance application</div>
-                        <div class="flex gap-8" style="flex-wrap:wrap;">
+
+                        {{-- Regular stage buttons (non-complete) --}}
+                        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:8px;">
                             @foreach($nextStages as $next)
-                                @if($next !== 'rejected')
+                                @if($next !== 'rejected' && $next !== 'completed')
                                     <form method="POST" action="{{ route('applications.updateStatus', $application) }}">
                                         @csrf @method('PATCH')
                                         <input type="hidden" name="status" value="{{ $next }}">
@@ -198,6 +200,75 @@
                                 <input type="hidden" name="status" value="rejected">
                                 <button class="btn btn-danger btn-sm">Reject</button>
                             </form>
+                        </div>
+
+                        {{-- Complete with payment recording --}}
+                        @if(in_array('completed', $nextStages))
+                            <div style="border-top:0.5px solid #eee;padding-top:14px;margin-top:6px;">
+                                <div style="font-size:12px;font-weight:500;color:#1D9E75;margin-bottom:10px;">
+                                    Mark as Completed — record payment
+                                </div>
+                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}">
+                                    @csrf @method('PATCH')
+                                    <input type="hidden" name="status" value="completed">
+
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                                        <div class="form-group" style="margin-bottom:0;">
+                                            <label class="form-label">Amount paid (₱)</label>
+                                            <input class="form-input" type="number" step="0.01" min="0"
+                                                name="fee_paid"
+                                                value="{{ $application->pet->adoption_fee ?? '' }}"
+                                                placeholder="0.00">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom:0;">
+                                            <label class="form-label">Payment method *</label>
+                                            <select class="form-input" name="payment_method" required>
+                                                <option value="" disabled selected>Select…</option>
+                                                @foreach(['Cash', 'GCash', 'Maya', 'Bank Transfer', 'Waived'] as $m)
+                                                    <option value="{{ $m }}">{{ $m }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('payment_method') <div class="form-error">{{ $message }}</div> @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label class="form-label">Reference no. <span style="color:#aaa;">(optional — for GCash / Maya / bank)</span></label>
+                                        <input class="form-input" type="text" name="payment_reference"
+                                            placeholder="e.g. GCash ref 1234567890">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                        onclick="return confirm('Mark this adoption as completed and record payment?')">
+                                        ✓ Complete adoption
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Payment summary (after completion) --}}
+                @if($application->status === 'completed' && $application->payment_method)
+                    <div class="card" style="margin-top:16px;">
+                        <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Payment record</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Amount paid</div>
+                                <div style="font-size:16px;font-weight:700;color:#1D9E75;">
+                                    ₱{{ number_format($application->fee_paid ?? 0, 2) }}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Method</div>
+                                <div style="font-size:13px;font-weight:500;">{{ $application->payment_method }}</div>
+                            </div>
+                            @if($application->payment_reference)
+                                <div style="grid-column:1/-1;">
+                                    <div style="font-size:11px;color:#aaa;margin-bottom:2px;">Reference no.</div>
+                                    <div style="font-size:13px;font-weight:500;">{{ $application->payment_reference }}</div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @endif

@@ -343,6 +343,22 @@
                         <td class="info-label">Completion date</td>
                         <td class="info-value">{{ $application->updated_at->format('M j, Y') }}</td>
                     </tr>
+                    <tr>
+                        <td class="info-label">Adoption fee</td>
+                        <td class="info-value">
+                            @if($application->fee_paid > 0)
+                                ₱{{ number_format($application->fee_paid, 2) }}
+                                — {{ $application->payment_method }}
+                                @if($application->payment_reference)
+                                    (Ref: {{ $application->payment_reference }})
+                                @endif
+                            @elseif($application->payment_method === 'Waived')
+                                Waived / Free adoption
+                            @else
+                                ₱0.00 — Free adoption
+                            @endif
+                        </td>
+                    </tr>
                 </table>
             </td>
             <td>

@@ -134,6 +134,20 @@
                                                         <div style="font-family:'Lora',serif;font-size:16px;font-weight:600;margin-bottom:6px;">
                                                             Adopt {{ $pet->name }}
                                                         </div>
+
+                                                        {{-- Adoption fee display --}}
+                                                        @if($pet->adoption_fee > 0)
+                                                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:#F0FAF5;border-radius:8px;border:0.5px solid #C0E8D5;">
+                                                                <span style="font-size:18px;font-weight:700;color:#1D9E75;">₱{{ number_format($pet->adoption_fee, 2) }}</span>
+                                                                <span style="font-size:12px;color:#666;">adoption fee · <strong>settled in person</strong> at the shelter upon handover</span>
+                                                            </div>
+                                                        @else
+                                                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:#F0FAF5;border-radius:8px;border:0.5px solid #C0E8D5;">
+                                                                <span style="font-size:14px;font-weight:700;color:#1D9E75;">Free adoption</span>
+                                                                <span style="font-size:12px;color:#666;">· sponsored by our shelter</span>
+                                                            </div>
+                                                        @endif
+
                                                         <div style="font-size:13px;color:#666;margin-bottom:16px;">
                                                             Tell us a little about yourself and why you'd be a great match.
                                                         </div>

@@ -24,6 +24,9 @@ class Application extends Model
         'experience',
         'hours_alone',
         'reason',
+        'fee_paid',
+        'payment_method',
+        'payment_reference',
         'notes',
         'submitted_at',
     ];
